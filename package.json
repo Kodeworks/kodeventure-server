@@ -1,16 +1,16 @@
 {
-  "name": "codepg",
+  "name": "kodeventure-server",
   "version": "1.0.0",
-  "description": "",
+  "description": "Server for Kodeventure programming RPG",
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "dev": "ts-node ./src/server.ts",        
+    "dev": "ts-node ./src/server.ts",
     "start": "tsnd --respawn ./src/server.js",
     "prod": "npm run build && npm run start"
   },
   "keywords": [],
-  "author": "",
+  "author": "Kodeworks",
   "license": "BSD-3",
   "type": "module",
   "dependencies": {
