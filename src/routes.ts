@@ -1,20 +1,15 @@
 import { Application, Request, Response } from 'express'
 import { UserController } from './controllers/userController'
+import { ScoreboardController } from './controllers/scoreboardController'
 
 export class Routes {
 
+    public scoreboardController: ScoreboardController = new ScoreboardController()
     public userController: UserController = new UserController()
     
     public routes(app: Application): void {
-        
-        app.route('/') 
-        .get((req: Request, res: Response) => {
-            res.status(200).send({
-                message: 'I GOT you'
-            })
-        })
 
-
+        app.get('/', this.scoreboardController.getIndex)
         app.route('/user').post(this.userController.addNewUser)
         app.route('/users').get(this.userController.getUsers)
 

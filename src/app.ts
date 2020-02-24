@@ -1,6 +1,7 @@
-import  express from 'express'
+import express from 'express'
 import bodyParser from 'body-parser'
 import mongoose from 'mongoose'
+import path from 'path'
 
 import { Routes } from './routes'
 
@@ -24,6 +25,7 @@ class App {
     private config(): void {
         this.app.use(bodyParser.json())
         this.app.use(bodyParser.urlencoded({ extended: false }))
+        this.app.use(express.static(path.resolve(__dirname, 'public')))
     }
 
     private mongoSetup(): void {
