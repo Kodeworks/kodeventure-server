@@ -10,7 +10,7 @@ class App {
     public app: express.Application
     public routes: Routes = new Routes()
 
-    public mongoUrl: String = 'mongodb://localhost/kodeventure'
+    public mongoUrl: string = 'mongodb://localhost/kodeventure'
 
     constructor() {
         this.app = express()
@@ -22,7 +22,7 @@ class App {
     }
 
     private config(): void {
-        this.app.use(bodyParser.json())        
+        this.app.use(bodyParser.json())
         this.app.use(bodyParser.urlencoded({ extended: false }))
     }
 

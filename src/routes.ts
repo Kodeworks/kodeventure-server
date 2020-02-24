@@ -1,11 +1,11 @@
-import { Request, Response } from 'express'
+import { Application, Request, Response } from 'express'
 import { UserController } from './controllers/userController'
 
 export class Routes {
 
     public userController: UserController = new UserController()
     
-    public routes(app): void {
+    public routes(app: Application): void {
         
         app.route('/') 
         .get((req: Request, res: Response) => {
