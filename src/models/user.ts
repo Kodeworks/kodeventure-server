@@ -10,12 +10,12 @@ const UserSchema: Schema = new Schema({
 })
 
 export interface IUser extends Document {
-    token: String
-    server_token: String
-    name: String
-    score: Number
-    titles: String[]
-    loot: String[]
+    token: string
+    server_token: string
+    name: string
+    score: number
+    titles: string[]
+    loot: string[]
 }
 
 export const UserDatabaseModel = mongoose.model<IUser>('User', UserSchema)
@@ -25,17 +25,31 @@ export class Player {
     ip: string
     port: number
 
-    constructor(token: string, ip: string, port: number) {
-        UserDatabaseModel.findOne({'token': token}, (err, user) => {
-            if (err) {
-                // TODO: Error handling / logging / what
-                throw Error(err)
-            } else {
-                this.user = user
-            }
-        })
-
+    private constructor(user: IUser, ip: string, port: number) {
+        this.user = user
         this.ip = ip
         this.port = port
+    }
+
+    public toString(): string {
+        return `Player<${this.user.name}>[${this.ip}:${this.port}] Score: ${this.user.score}`
+    }
+
+    /**
+     * Fetch the player corresponding to the given token from the database and return a Player object with
+     * the current connection information.
+     *
+     * @param token The unique player token
+     * @param ip The IP address the player is connecting from
+     * @param port The port the player is running his/her web server on
+     */
+    public static async get(token: string, ip: string, port: number): Promise<Player> {
+        const user = await UserDatabaseModel.findOne({'token': token})
+
+        if (!user) {
+            throw Error(`Failed to fetch user with token "${token}"`)
+        }
+
+        return new Player(user, ip, port)
     }
 }

@@ -4,8 +4,9 @@
 const enum SystemEvent {
     // General game events
     GAME_STARTED = "game_started",
-    GAME_MESSAGE = "game_message",
+    GAME_PAUSED = "game_paused",
     GAME_ENDED = "game_ended",
+    GAME_MESSAGE = "game_message",
     // User related events
     USER_CONNECTED = "user_connected",
     USER_DISCONNECTED = "user_disconnected",
