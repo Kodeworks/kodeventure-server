@@ -45,7 +45,11 @@ class Kodeventure {
 
     private mongoSetup(): void {
         mongoose.Promise = global.Promise
-        mongoose.connect(this.mongoUrl)
+        mongoose.connect(this.mongoUrl, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+            useCreateIndex: true
+        })
     }
 }
 
