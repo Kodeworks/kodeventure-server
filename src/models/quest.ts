@@ -1,4 +1,4 @@
-import { GameEngine } from "engine/engine"
+import { GameEngine } from "../engine/engine"
 
 export abstract class Quest {
     private engine: GameEngine
@@ -8,7 +8,7 @@ export abstract class Quest {
         this.engine.registerQuest(this)
     }
 
-    public abstract handleEvent(eventType: any, data?: any): void
+    public abstract async handleEvent(eventType: any, data?: any): Promise<void>
 
     public abstract get id(): string
 

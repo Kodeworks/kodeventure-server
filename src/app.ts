@@ -3,69 +3,51 @@ import express from 'express'
 import http from 'http'
 import mongoose from 'mongoose'
 import path from 'path'
-import WebSocket from 'ws'
 
+import { GameEngine } from './engine/engine'
 import { Routes } from './routes'
-import { Player } from './models/user'
+import { WebSocketHandler } from './websocket'
 
 
-class Kodeventure {
-    /**
-     * Main application class for the Kodeventure programming RPG
-     */
-
-    public app: express.Application
-    public httpServer: http.Server
-    public mongoUrl: string = 'mongodb://localhost/kodeventure'
-    public routes: Routes = new Routes()
-    public wss: WebSocket.Server
+/**
+ * Main application class for the Kodeventure programming RPG
+ */
+export default class Kodeventure {
+    private engine: GameEngine
+    private mongoUrl: string = 'mongodb://localhost/kodeventure'
+    private httpServer: http.Server
+    private routes: Routes = new Routes()
+    private webapp: express.Application
+    private ws: WebSocketHandler
 
     /**
      * Construct a Kodeventure instance
      */
     constructor() {
-        this.app = express()
-        this.httpServer = http.createServer(this.app)
-        this.wss = new WebSocket.Server({ server: this.httpServer, path: '/ws' })
+        this.webapp = express()
+        this.engine = new GameEngine()
+        this.httpServer = http.createServer(this.webapp)
+        this.ws = new WebSocketHandler(this.httpServer, this.engine)
 
         this.config()
         this.mongoSetup()
-        this.webSocketSetup()
 
-        this.routes.routes(this.app)
+        this.routes.routes(this.webapp)
+    }
+
+    public listen(host: string, port: number) {
+        this.httpServer.listen(port, host, () => {
+            console.log(`Server started listening on ${host}:${port}`)
+        })
     }
 
     /**
      * Configure express.js
      */
     private config(): void {
-        this.app.use(bodyParser.json())
-        this.app.use(bodyParser.urlencoded({ extended: false }))
-        this.app.use(express.static(path.resolve(__dirname, 'public')))
-    }
-
-    /**
-     * Configure websocket server
-     */
-    private webSocketSetup(): void {
-        // Inject a user with token "abc" into database by curling to database:
-        // curl -H "Content-Type: application/json" -X POST localhost:3001/user -d '
-        // {"token": "abc", "server_token": "def", "name": "Snerk", "score": 10, "titles": [], "loot": []}'
-        const testUserToken = "abc"
-
-        // TODO: move handler code to a seperate class, wrap the socket and request to construct a user connection object to extend with additional functionality
-        this.wss.on('connection', async (ws: WebSocket, request: http.IncomingMessage) => {
-            try {
-                const player = await Player.get(testUserToken, request.connection.remoteAddress, request.connection.remotePort)
-                console.log(`[CONNECT] ${player}`)
-
-                ws.on('message', (msg: string) => {
-                  console.log(`[MSG] (${player}): ${msg}`)
-                })
-            } catch {
-                console.error(`[ERR] Could not find player with toke "${testUserToken}"`)
-            }
-        })
+        this.webapp.use(bodyParser.json())
+        this.webapp.use(bodyParser.urlencoded({ extended: false }))
+        this.webapp.use(express.static(path.resolve(__dirname, 'public')))
     }
 
     /**
@@ -82,5 +64,3 @@ class Kodeventure {
         })
     }
 }
-
-export default new Kodeventure().httpServer
