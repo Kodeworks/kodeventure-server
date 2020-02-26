@@ -11,6 +11,7 @@ export const enum SystemEvent {
     GAME_PAUSED = "game_paused",
     GAME_ENDED = "game_ended",
     GAME_MESSAGE = "game_message",
+
     // User related events
     PLAYER_CONNECTED = "player_connected",
     PLAYER_DISCONNECTED = "player_disconnected",
@@ -21,6 +22,10 @@ export const enum SystemEvent {
     PLAYER_QUEST_UNLOCKED = "player_quest_unlocked",
     PLAYER_QUEST_REQUEST = "player_quest_request",
     PLAYER_QUEST_RESPONSE = "player_quest_response",
+
+    // Player related errors and warnings
+    PLAYER_ERROR = "player_error",
+    PLAYER_WARNING = "player_warning"
 }
 
 // Event payload declarations
@@ -60,21 +65,24 @@ export interface IPlayerScoreEvent {
  * Event data structure for player title aquired
  */
 export interface IPlayerTitleEvent {
-
+    player: Player,
+    newTitle: string
 }
 
 /**
  * Event data structure for player loot obtained
  */
 export interface IPlayerLootObtainedEvent {
-
+    player: Player,
+    loot: string
 }
 
 /**
  * Event data stucture for player loot used
  */
 export interface IPlayerLootUsedEvent {
-
+    player: Player,
+    loot: string
 }
 
 /**
@@ -96,4 +104,18 @@ export interface IPlayerQuestRequestEvent {
  */
 export interface IPlayerQuestResponseEvent {
 
+}
+
+/**
+ * Event data structure for generic user specific error
+ */
+export interface IPlayerError {
+    msg: string
+}
+
+/**
+ * Event data structure for generic user specific warning
+ */
+export interface IPlayerWarning {
+    msg: string
 }

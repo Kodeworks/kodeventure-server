@@ -1,8 +1,9 @@
-import { IncomingMessage, Server } from 'http'
+import { IncomingMessage, Server } from 'http'
+import url from 'url'
 import WebSocket from 'ws'
 
 import { GameEngine } from './engine/engine'
-import { IPlayerConnectedEvent, SystemEvent } from './engine/events'
+import { IPlayerConnectedEvent, SystemEvent, IPlayerScoreEvent, IPlayerTitleEvent, IPlayerLootObtainedEvent, IPlayerLootUsedEvent } from './engine/events'
 import { Log } from './logging'
 
 /**
@@ -10,7 +11,8 @@ import { Log } from './logging'
  */
 export class WebSocketHandler {
     private engine: GameEngine
-    private wss: WebSocket.Server
+    private players: WebSocket.Server
+    private scoreBoard: WebSocket.Server
 
     /**
      * Construct a web socket handler for the provided http.Server instance
@@ -18,13 +20,74 @@ export class WebSocketHandler {
      * @param server An instance of http.Server
      */
     constructor(server: Server, engine: GameEngine) {
-        this.wss = new WebSocket.Server({ server: server, path: '/ws' })
         this.engine = engine
 
-        // Configure websocket server event handlers
-        this.wss.on('connection', this.handleConnection.bind(this))
-        this.wss.on('close', this.handleClose.bind(this))
-        this.wss.on('error', this.handleError.bind(this))
+        this.players = new WebSocket.Server({ noServer: true })
+        this.scoreBoard = new WebSocket.Server({ noServer: true })
+
+        this.configureServers(server)
+    }
+
+    /**
+     * Configure a dispatcher on the http server instance that handles upgrade requests
+     * and dispatches to the correct websocket server based on which endpoint is being acessed.
+     * @param server A http.Server instance
+     */
+    private configureServers(server: Server) {
+        // Attach a dispatcher dealing with upgrade requests
+        server.on('upgrade', (request, socket, head) => {
+            const pathname = url.parse(request.url).pathname
+
+            // Handler for regular player server
+            if (pathname === '/ws') {
+                this.players.handleUpgrade(request, socket, head, ws => {
+                    this.players.emit('connection', ws, request);
+                })
+            // Handler for scoreboard server
+            } else if (pathname === '/scoreboard/ws') {
+                this.scoreBoard.handleUpgrade(request, socket, head, ws => {
+                    this.scoreBoard.emit('connection', ws, request);
+                })
+            // Discard upgrade requests for all other endpoints
+            } else {
+                socket.destroy()
+            }
+        })
+
+        // Configure players websocket server event handlers
+        this.players.on('connection', this.handlePlayersConnection.bind(this))
+        this.players.on('close', this.handlePlayersClose.bind(this))
+        this.players.on('error', this.handlePlayersError.bind(this))
+
+        // Configure scoreboard websocket server event handlers
+        this.scoreBoard.on('connection', this.handleScoreBoardConnection.bind(this))
+        this.scoreBoard.on('close', this.handleScoreBoardClose.bind(this))
+        this.scoreBoard.on('error', this.handleScoreBoardError.bind(this))
+
+        // Subscribe to relevant player events that should be broadcast to the scoreboard
+        this.engine.on(SystemEvent.PLAYER_SCORE, data => this.broadcastScoreBoardEvent(SystemEvent.PLAYER_SCORE, data))
+        this.engine.on(SystemEvent.PLAYER_TITLE, data => this.broadcastScoreBoardEvent(SystemEvent.PLAYER_TITLE, data))
+        this.engine.on(SystemEvent.PLAYER_LOOT_OBTAINED, data => this.broadcastScoreBoardEvent(SystemEvent.PLAYER_LOOT_OBTAINED, data))
+        this.engine.on(SystemEvent.PLAYER_LOOT_USED, data => this.broadcastScoreBoardEvent(SystemEvent.PLAYER_LOOT_USED, data))
+        
+    }
+
+    /**
+     * Broadcast a message to all clients connected to the scoreboard
+     * @param event The event to broadcast
+     * @param data The unserialized data to send
+     */
+    private broadcastScoreBoardEvent(event: SystemEvent, data: any) {
+        // Make sure we strip the player of private information before broadcasting
+        if (data.player) data.player = data.player.toJson()
+
+        const envelope = { type: event, data: data }
+
+        this.scoreBoard.clients.forEach(client => {
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(JSON.stringify(envelope));
+            }
+        })
     }
 
     /**
@@ -32,7 +95,7 @@ export class WebSocketHandler {
      * @param ws The WebSocket object for the active connection
      * @param request The HTTP request object with the associated connection
      */
-    private handleConnection(ws: WebSocket, request: IncomingMessage) {
+    private handlePlayersConnection(ws: WebSocket, request: IncomingMessage) {
         // Ensure the request has the user token in the Authorization header.
         if (!request.headers.authorization) {
             const payload = JSON.stringify({
@@ -61,15 +124,39 @@ export class WebSocketHandler {
     /**
      * Server event handler for "close" events
      */
-    private handleClose() {
-        Log.error(`Server closed`, "ws")
+    private handlePlayersClose() {
+        Log.error(`Players server closed`, "ws")
     }
 
     /**
      * Server event handler for "error" events
      * @param error The error that was thrown
      */
-    private handleError(error: Error) {
-        Log.error(`Server error: ${error}`, "ws")
+    private handlePlayersError(error: Error) {
+        Log.error(`Players server error: ${error}`, "ws")
+    }
+
+    /**
+     * Server event handler for "connection" events
+     * @param ws The WebSocket object for the active connection
+     * @param request The HTTP request object with the associated connection
+     */
+    private handleScoreBoardConnection(ws: WebSocket, request: IncomingMessage) {
+        // TODO: Need to do anything here? We will just broadcast anyway
+    }
+
+    /**
+     * Server event handler for "close" events
+     */
+    private handleScoreBoardClose() {
+        Log.error(`Score board server closed`, "scoreboard")
+    }
+
+    /**
+     * Server event handler for "error" events
+     * @param error The error that was thrown
+     */
+    private handleScoreBoardError(error: Error) {
+        Log.error(`Score board server error: ${error}`, "scoreboard")
     }
 }

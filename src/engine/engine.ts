@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
 
-import { SystemEvent, IPlayerConnectedEvent, IPlayerScoreEvent } from './events'
+import { SystemEvent, IPlayerConnectedEvent, IPlayerScoreEvent, IPlayerError } from './events'
 import { Log } from '../logging'
 import { Quest } from "../models/quest"
 import { Player } from "../models/user"
@@ -73,7 +73,14 @@ export class GameEngine extends EventEmitter {
 
                 this.registerPlayer(player)
             } catch {
-                Log.error(`Could not find player with token "${data.token}"`, "db")
+                const payload: IPlayerError = { msg: `Could not find player with token "${data.token}"` }
+
+                data.ws.send(JSON.stringify({ type: SystemEvent.PLAYER_ERROR, data: payload }))
+                data.ws.close()
+
+                const source = `${data.ip}:${data.port}`
+
+                Log.error(`${payload.msg} (connection attempt: ${source})`, "db")
             }
         }
     }
