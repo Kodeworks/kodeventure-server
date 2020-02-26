@@ -3,6 +3,7 @@ import WebSocket from 'ws'
 
 import { GameEngine } from './engine/engine'
 import { IPlayerConnectedEvent, SystemEvent } from './engine/events'
+import { Log } from './logging'
 
 /**
  * Kodeventure websocket handler
@@ -42,7 +43,7 @@ export class WebSocketHandler {
             ws.send(payload)
 
             const source = `${request.connection.remoteAddress}:${request.connection.remotePort}`
-            console.log(`Got invalid connection attempt from ${source}`)
+            Log.warning(`Missing auth header from ${source}`, "ws")
 
             return ws.close()
         }
@@ -61,7 +62,7 @@ export class WebSocketHandler {
      * Server event handler for "close" events
      */
     private handleClose() {
-        console.error(`[WSS] WebSocket server closed`)
+        Log.error(`Server closed`, "ws")
     }
 
     /**
@@ -69,6 +70,6 @@ export class WebSocketHandler {
      * @param error The error that was thrown
      */
     private handleError(error: Error) {
-        console.error(`[ERR] WebSocket server error: ${error}`)
+        Log.error(`Server error: ${error}`, "ws")
     }
 }

@@ -2,7 +2,8 @@ import { EventEmitter } from 'events'
 import WebSocket from 'ws'
 import mongoose, { Document, Schema } from 'mongoose'
 
-import { SystemEvent, IPlayerConnectedEvent, IGameMessageEvent } from '../engine/events'
+import { SystemEvent, IPlayerConnectedEvent } from '../engine/events'
+import { Log } from '../logging'
 
 const UserSchema: Schema = new Schema({
     token: { type: String, unique: true, required: true },
@@ -182,7 +183,7 @@ export class Player extends EventEmitter {
         // Make sure we purge all listeners before discarding the object so we make the gc happy
         this.ws.removeAllListeners()
 
-        console.log(`Updating ${this} with new connection: ${data.ip}:${data.port}`)
+        Log.debug(`${this} reconnected, updating connection: ${data.ip}:${data.port}`, SystemEvent.PLAYER_CONNECTED)
 
         this.ip = data.ip
         this.port = data.port
@@ -243,7 +244,7 @@ export class Player extends EventEmitter {
      */
     private handleMessage(msg: string) {
         // TODO: Parse JSON and emit event
-        console.log(`[MSG] ${this}: ${msg}`)
+        Log.debug(`${this}: ${msg}`, "msg")
     }
 
     /**
@@ -252,7 +253,7 @@ export class Player extends EventEmitter {
      */
     private handleError(error: Error) {
         // TODO: do what. emit event? lot?
-        console.error(`[ERR] WS error for ${this}: ${error}`)
+        Log.error(`${this}: ${error}`, "ws")
     }
 
     /**
@@ -262,6 +263,6 @@ export class Player extends EventEmitter {
      */
     private handleClose(code: number, reason: string) {
         // TODO: emit event
-        console.log(`[DISCONNECT] ${this}`)
+        Log.debug(`${this}`, SystemEvent.PLAYER_DISCONNECTED)
     }
 }

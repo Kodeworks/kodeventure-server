@@ -1,12 +1,9 @@
 import { EventEmitter } from 'events'
 
+import { SystemEvent, IPlayerConnectedEvent, IPlayerScoreEvent } from './events'
+import { Log } from '../logging'
 import { Quest } from "../models/quest"
 import { Player } from "../models/user"
-import {
-    SystemEvent,
-    IPlayerConnectedEvent,
-    IPlayerScoreEvent,
-} from './events'
 
 export class GameEngine extends EventEmitter {
     private players: Map<string, Player>
@@ -21,7 +18,7 @@ export class GameEngine extends EventEmitter {
         this.on(SystemEvent.PLAYER_CONNECTED, this.handlePlayerConnected.bind(this))
 
         this.on(SystemEvent.PLAYER_SCORE, (data: IPlayerScoreEvent) => {
-            console.log(`${data.player} now has ${data.player.score} points!`)
+            Log.debug(`${data.player} now has ${data.player.score} points!`, SystemEvent.PLAYER_SCORE)
         })
     }
 
@@ -41,7 +38,7 @@ export class GameEngine extends EventEmitter {
         this.players.set(player.userToken, player)
         this.subscribeToPlayerEvents(player)
 
-        console.log(`Registered new player: ${player}`)
+        Log.info(`${player}`, SystemEvent.PLAYER_CONNECTED)
 
         // Send a game_message event to the player over the websocket connection
         player.notify(`Welcome ${player.name}! Great adventures lay before you, across the bit fields of doom...`)
@@ -76,7 +73,7 @@ export class GameEngine extends EventEmitter {
 
                 this.registerPlayer(player)
             } catch {
-                console.error(`[ERR] Could not find player with token "${data.token}"`)
+                Log.error(`Could not find player with token "${data.token}"`, "db")
             }
         }
     }

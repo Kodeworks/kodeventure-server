@@ -7,6 +7,7 @@ import path from 'path'
 import { GameEngine } from './engine/engine'
 import { Routes } from './routes'
 import { WebSocketHandler } from './websocket'
+import { Log } from './logging'
 
 
 /**
@@ -37,7 +38,7 @@ export default class Kodeventure {
 
     public listen(host: string, port: number) {
         this.httpServer.listen(port, host, () => {
-            console.log(`Server started listening on ${host}:${port}`)
+            Log.info(`Server started listening on ${host}:${port}`)
         })
     }
 
