@@ -32,12 +32,18 @@ export class WebSocketHandler {
      * @param request The HTTP request object with the associated connection
      */
     private handleConnection(ws: WebSocket, request: IncomingMessage) {
+        // Ensure the request has the user token in the Authorization header.
         if (!request.headers.authorization) {
-            ws.send(JSON.stringify({
+            const payload = JSON.stringify({
                 type: SystemEvent.GAME_MESSAGE,
-                token: null,
-                msg: 'Could not find a valid "Authorization" header in websocket request. Please set it to your player token.'
-            }))
+                data: 'Could not find a valid "Authorization" header in websocket request. Please set it to your player token.'
+            })
+
+            ws.send(payload)
+
+            const source = `${request.connection.remoteAddress}:${request.connection.remotePort}`
+            console.log(`Got invalid connection attempt from ${source}`)
+
             return ws.close()
         }
 

@@ -2,7 +2,7 @@ import { EventEmitter } from 'events'
 import WebSocket from 'ws'
 import mongoose, { Document, Schema } from 'mongoose'
 
-import { SystemEvent } from '../engine/events'
+import { SystemEvent, IPlayerConnectedEvent, IGameMessageEvent } from '../engine/events'
 
 const UserSchema: Schema = new Schema({
     token: { type: String, unique: true, required: true },
@@ -48,6 +48,8 @@ export class Player extends EventEmitter {
         this.ip = ip
         this.port = port
         this.ws = ws
+
+        this.configureWebsocket()
     }
 
     /**
@@ -155,6 +157,16 @@ export class Player extends EventEmitter {
     }
 
     /**
+     * Send a standard game message notification to the player over the websocket connection
+     * @param msg The message to send
+     */
+    public notify(msg: string) {
+        const payload = { type: SystemEvent.GAME_MESSAGE, data: { msg: msg } }
+
+        this.ws.send(JSON.stringify(payload))
+    }
+
+    /**
      * Persist the current state of the player to the database
      */
     public save() {
@@ -162,17 +174,21 @@ export class Player extends EventEmitter {
     }
 
     /**
-     * Update this player object with information from an incoming player object.
+     * Update this player object with information from an updated player connection event.
      * This disregards all user document data, as we're only interested in remote IP, port and websocket object.
-     * @param player A player instance
+     * @param data The player connected event payload
      */
-    public update(player: Player) {
+    public update(data: IPlayerConnectedEvent) {
         // Make sure we purge all listeners before discarding the object so we make the gc happy
         this.ws.removeAllListeners()
 
-        this.ip = player.ip
-        this.port = player.port
-        this.ws = player.ws
+        console.log(`Updating ${this} with new connection: ${data.ip}:${data.port}`)
+
+        this.ip = data.ip
+        this.port = data.port
+        this.ws = data.ws
+
+        this.configureWebsocket()
     }
 
     /**
@@ -216,9 +232,9 @@ export class Player extends EventEmitter {
      * Configure the currently active websocket and attach event handlers
      */
     private configureWebsocket() {
-        this.ws.on('message', this.handleMessage)
-        this.ws.on('error', this.handleError)
-        this.ws.on('close', this.handleClose)
+        this.ws.on('message', this.handleMessage.bind(this))
+        this.ws.on('error', this.handleError.bind(this))
+        this.ws.on('close', this.handleClose.bind(this))
     }
 
     /**

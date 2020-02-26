@@ -5,7 +5,7 @@ import { Player } from "../models/user"
 import {
     SystemEvent,
     IPlayerConnectedEvent,
-    IPlayerScoreEvent
+    IPlayerScoreEvent,
 } from './events'
 
 export class GameEngine extends EventEmitter {
@@ -19,6 +19,10 @@ export class GameEngine extends EventEmitter {
         this.quests = new Set()
 
         this.on(SystemEvent.PLAYER_CONNECTED, this.handlePlayerConnected.bind(this))
+
+        this.on(SystemEvent.PLAYER_SCORE, (data: IPlayerScoreEvent) => {
+            console.log(`${data.player} now has ${data.player.score} points!`)
+        })
     }
 
     public registerQuest(quest: Quest) {
@@ -34,19 +38,13 @@ export class GameEngine extends EventEmitter {
      * @param player The player to register
      */
     private registerPlayer(player: Player) {
-        // If we already have a player object for this player, just update it with the new connection information
-        if (this.players.has(player.userToken)) {
-            const existing = this.players.get(player.userToken)
+        this.players.set(player.userToken, player)
+        this.subscribeToPlayerEvents(player)
 
-            console.log(`Updating player ${existing} based on ${player}`)
+        console.log(`Registered new player: ${player}`)
 
-            existing.update(player)
-        } else {
-            console.log(`Adding new player ${player}`)
-
-            this.players.set(player.userToken, player)
-            this.subscribeToPlayerEvents(player)
-        }
+        // Send a game_message event to the player over the websocket connection
+        player.notify(`Welcome ${player.name}! Great adventures lay before you, across the bit fields of doom...`)
     }
 
     /**
@@ -62,14 +60,24 @@ export class GameEngine extends EventEmitter {
 
     /**
      * Event handler for when a player has connected
-     * @param data 
+     * @param data The player connected event data
      */
     private async handlePlayerConnected(data: IPlayerConnectedEvent) {
-        try {
-            const player = await Player.get(data.token, data.ip, data.port, data.ws)
-            this.registerPlayer(player)
-        } catch {
-            console.error(`[ERR] Could not find player with token "${data.token}"`)
+        if (this.players.has(data.token)) {
+            const player = this.players.get(data.token)
+
+            player.update(data)
+
+            // Send a game_message event to the player over the websocket connection
+            player.notify(`Welcome back ${player.name}! May you fare better this time...`)
+        } else {
+            try {
+                const player = await Player.get(data.token, data.ip, data.port, data.ws)
+
+                this.registerPlayer(player)
+            } catch {
+                console.error(`[ERR] Could not find player with token "${data.token}"`)
+            }
         }
     }
 }
