@@ -142,7 +142,9 @@ export class WebSocketHandler {
      * @param request The HTTP request object with the associated connection
      */
     private handleScoreBoardConnection(ws: WebSocket, request: IncomingMessage) {
-        // TODO: Need to do anything here? We will just broadcast anyway
+        const source = `${request.connection.remoteAddress}:${request.connection.remotePort}`
+
+        Log.debug(`New connection from: ${source}`, "scoreboard")
     }
 
     /**
