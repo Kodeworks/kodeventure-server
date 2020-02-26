@@ -65,11 +65,11 @@ export class WebSocketHandler {
         this.scoreBoard.on('error', this.handleScoreBoardError.bind(this))
 
         // Subscribe to relevant player events that should be broadcast to the scoreboard
+        this.engine.on(SystemEvent.PLAYER_CONNECTED, data => this.broadcastScoreBoardEvent(SystemEvent.PLAYER_CONNECTED, data))
         this.engine.on(SystemEvent.PLAYER_SCORE, data => this.broadcastScoreBoardEvent(SystemEvent.PLAYER_SCORE, data))
         this.engine.on(SystemEvent.PLAYER_TITLE, data => this.broadcastScoreBoardEvent(SystemEvent.PLAYER_TITLE, data))
         this.engine.on(SystemEvent.PLAYER_LOOT_OBTAINED, data => this.broadcastScoreBoardEvent(SystemEvent.PLAYER_LOOT_OBTAINED, data))
         this.engine.on(SystemEvent.PLAYER_LOOT_USED, data => this.broadcastScoreBoardEvent(SystemEvent.PLAYER_LOOT_USED, data))
-        
     }
 
     /**
@@ -78,8 +78,15 @@ export class WebSocketHandler {
      * @param data The unserialized data to send
      */
     private broadcastScoreBoardEvent(event: SystemEvent, data: any) {
+        // If we have a new player connection, wash the payload
+        if (event === SystemEvent.PLAYER_CONNECTED) {
+            data = { player: data.player }
+        }
+
         // Make sure we strip the player of private information before broadcasting
-        if (data.player) data.player = data.player.toJson()
+        if (data.player) {
+            data.player = data.player.toJson()
+        }
 
         const envelope = { type: event, data: data }
 
