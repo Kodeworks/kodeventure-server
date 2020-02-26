@@ -59,7 +59,7 @@ export class Log {
 
     public static error(msg: string, type?: string) {
         if (Log.level <= LogLevel.ERROR) {
-            console.error(`${Log.prefix(LogLevel.WARNING, type)} ${chalk.red(msg)}`)
+            console.error(`${Log.prefix(LogLevel.ERROR, type)} ${chalk.red(msg)}`)
         }
     }
 }
