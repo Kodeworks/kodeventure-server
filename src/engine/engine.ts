@@ -36,11 +36,11 @@ export class GameEngine extends EventEmitter {
         // If we already have a player object for this player, just update it with the new connection information
         if (this.players.has(player.userToken)) {
             const existing = this.players.get(player.userToken)
+            console.log(`Updating player ${existing} based on ${player}`)
             existing.update(player)
-            console.log(`Updated player ${existing} based on ${player}`)
         } else {
+            console.log(`Adding new player ${player}`)
             this.players.set(player.userToken, player)
-            console.log(`Added new player ${player}`)
         }
     }
 

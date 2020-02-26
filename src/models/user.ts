@@ -160,6 +160,9 @@ export class Player extends EventEmitter {
      * @param player A player instance
      */
     public update(player: Player) {
+        // Make sure we purge all listeners before discarding the object so we make the gc happy
+        this.ws.removeAllListeners()
+
         this.ip = player.ip
         this.port = player.port
         this.ws = player.ws
