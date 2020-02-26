@@ -23,6 +23,13 @@ export interface IUser extends Document {
     loot: string[]
 }
 
+export interface IPublicUser {
+    name: string,
+    score: number,
+    titles: string[],
+    loot: string[]
+}
+
 export const UserDatabaseModel = mongoose.model<IUser>('User', UserSchema)
 
 /**
@@ -200,15 +207,15 @@ export class Player extends EventEmitter {
     }
 
     /**
-     * JSON serialized version of this player intended for public display on leaderboard. No credentials on display.
+     * Sanitized representation of this player intended for public display on leaderboard. No credentials on display.
      */
-    public toJson(): string {
-        return JSON.stringify({
+    public sanitize(): IPublicUser {
+        return {
             name: this.name,
             score: this.score,
             titles: this.titles,
             loot: this.loot
-        })
+        }
     }
 
     /**

@@ -3,7 +3,7 @@ import url from 'url'
 import WebSocket from 'ws'
 
 import { GameEngine } from './engine/engine'
-import { IPlayerConnectedEvent, SystemEvent, IPlayerScoreEvent, IPlayerTitleEvent, IPlayerLootObtainedEvent, IPlayerLootUsedEvent } from './engine/events'
+import { IPlayerConnectedEvent, SystemEvent } from './engine/events'
 import { Log } from './logging'
 
 /**
@@ -85,7 +85,7 @@ export class WebSocketHandler {
 
         // Make sure we strip the player of private information before broadcasting
         if (data.player) {
-            data.player = data.player.toJson()
+            data.player = data.player.sanitize()
         }
 
         const envelope = { type: event, data: data }
