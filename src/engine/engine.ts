@@ -4,7 +4,8 @@ import { Quest } from "../models/quest"
 import { Player } from "../models/user"
 import {
     SystemEvent,
-    IPlayerConnectedEvent
+    IPlayerConnectedEvent,
+    IPlayerScoreEvent
 } from './events'
 
 export class GameEngine extends EventEmitter {
@@ -36,12 +37,27 @@ export class GameEngine extends EventEmitter {
         // If we already have a player object for this player, just update it with the new connection information
         if (this.players.has(player.userToken)) {
             const existing = this.players.get(player.userToken)
+
             console.log(`Updating player ${existing} based on ${player}`)
+
             existing.update(player)
         } else {
             console.log(`Adding new player ${player}`)
+
             this.players.set(player.userToken, player)
+            this.subscribeToPlayerEvents(player)
         }
+    }
+
+    /**
+     * Register the game engine as a listener to relevant player events
+     * @param player A Player instance
+     */
+    private subscribeToPlayerEvents(player: Player) {
+        player.on(SystemEvent.PLAYER_SCORE, data => this.emit(SystemEvent.PLAYER_SCORE, data))
+        player.on(SystemEvent.PLAYER_TITLE, data => this.emit(SystemEvent.PLAYER_TITLE, data))
+        player.on(SystemEvent.PLAYER_LOOT_OBTAINED, data => this.emit(SystemEvent.PLAYER_LOOT_OBTAINED, data))
+        player.on(SystemEvent.PLAYER_LOOT_USED, data => this.emit(SystemEvent.PLAYER_LOOT_USED, data))
     }
 
     /**

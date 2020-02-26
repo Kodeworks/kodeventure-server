@@ -51,6 +51,13 @@ export class Player extends EventEmitter {
     }
 
     /**
+     * Get this player's name
+     */
+    public get name(): string {
+        return this.user.name
+    }
+
+    /**
      * Get this player's current score
      */
     public get score(): number {
@@ -173,6 +180,18 @@ export class Player extends EventEmitter {
      */
     public toString(): string {
         return `Player<${this.user.name}>[${this.ip}:${this.port}]`
+    }
+
+    /**
+     * JSON serialized version of this player intended for public display on leaderboard. No credentials on display.
+     */
+    public toJson(): string {
+        return JSON.stringify({
+            name: this.name,
+            score: this.score,
+            titles: this.titles,
+            loot: this.loot
+        })
     }
 
     /**

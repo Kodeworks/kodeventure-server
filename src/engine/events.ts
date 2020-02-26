@@ -1,5 +1,7 @@
 import WebSocket from 'ws'
 
+import { Player } from '../models/user';
+
 /**
  * Complete enumeration of all events in the game engine
  */
@@ -51,7 +53,7 @@ export interface IPlayerDisconnectedEvent {
  * Event data structure for player score changed
  */
 export interface IPlayerScoreEvent {
-
+    player: Player
 }
 
 /**
