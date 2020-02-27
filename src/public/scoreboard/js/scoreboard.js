@@ -28,7 +28,7 @@ function Scoreboard() {
 
     switch (type) {
       case 'player_connected':
-        setPlayers(players => [...players, data])
+        setPlayers(players => [...players, data.player])
         break
 
       case 'player_score':
