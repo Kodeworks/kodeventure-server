@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto+Mono&display=swap');
+
 body {
   font-family: Inter,-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol;
   line-height: 1.625;
@@ -7,6 +9,11 @@ body {
 h1 {
   font-size: 32px;
   font-weight: 500;
+}
+
+h2 {
+  font-weight: 600;
+  margin-bottom: 5px;
 }
 
 .mainHeader {
@@ -19,7 +26,7 @@ h1 {
 }
 
 .mainHeader-container {
-  width: 1040px;
+  width: 1280px;
   margin: 0 auto;
   position: absolute;
   bottom: 10px;
@@ -35,9 +42,12 @@ h1 {
   width: 150px;
 }
 
-.scoreboard {
-  width: 1040px;
+#scoreboard {
+  width: 1280px;
   margin: 0 auto;
+
+  display: flex;
+  flex-direction: row;
 }
 
 .scoreboard-title {
@@ -55,8 +65,37 @@ h1 {
   font-size: 16px;
 }
 
+/* Kill Feed
+-----------------------------------------------------------------------------*/
+.kill-feed {
+  font-family: 'Roboto Mono', sans-serif;
+  font-size: 12px;
+  width: 420px;
+  background: #efefef;
+  margin-right: 25px;
+  box-sizing: border-box;
+  padding: 10px 15px;
+}
+
+.kill-feed-header {
+  padding-bottom: 10px;
+  border-bottom: 1px dashed #000;
+  margin-bottom: 15px;
+}
+
+.kill-feed li {
+  margin-bottom: 2px;
+}
+
+
+
+
 /* Scoreboard stuff
 -----------------------------------------------------------------------------*/
+.player-list {
+  flex-grow: 2;
+}
+
 .player {
   display: flex;
   flex-direction: row;
@@ -87,7 +126,7 @@ h1 {
   width: 250px;
 }
 .player-score {
-  width: 150px;
+  width: 110px;
 }
 
 
