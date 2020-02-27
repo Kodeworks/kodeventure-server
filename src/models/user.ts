@@ -4,15 +4,18 @@ import mongoose, { Document, Schema } from 'mongoose'
 
 import { SystemEvent, IPlayerConnectedEvent, IPlayerConnectingEvent } from '../engine/events'
 import { Log } from '../logging'
+import fetch from 'node-fetch'
 
 const UserSchema: Schema = new Schema({
     token: { type: String, unique: true, required: true },
     server_token: { type: String, unique: true, required: true },
     name: { type: String, required: true, unique: true },
-    score:  { type: Number, required: true },
+    score: { type: Number, required: true },
     titles: { type: [String], required: true },
     loot: { type: [String], required: true }
 })
+
+const PLAYER_PORT = 4242;
 
 export interface IUser extends Document {
     token: string
@@ -279,4 +282,75 @@ export class Player extends EventEmitter {
         // TODO: emit event
         Log.debug(`${this}`, SystemEvent.PLAYER_DISCONNECTED)
     }
+
+    /**
+     * Send a HTTP GET request
+     * @param route The route to GET.
+     */
+    public sendHttpGetRequest = async (route: string) => {
+        const url = `http://${this.ip}:${PLAYER_PORT}/${route}`;
+        try {
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': this.serverToken
+                }
+            });
+            const json = await response.json();
+            return json;
+        } catch (error) {
+            Log.info(`Tried to GET from ${this}${route}, got: ${error.message}`)
+            return null;
+        }
+    }
+
+    /**
+     * Send a HTTP POST request
+     * @param route The route to POST to.
+     * @param payload The object that will be posted.
+     */
+    public sendHttpPostRequest = async (route: string, payload: object) => {
+        const url = `http://${this.ip}:${PLAYER_PORT}/${route}`;
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': this.serverToken
+                },
+                body: JSON.stringify(payload)
+            });
+            const json = await response.json();
+            return json;
+        } catch (error) {
+            Log.info(`Tried to POST from ${this}${route}, got: ${error.message}`)
+            return null;
+        };
+    }
+
+    /**
+     * Send a HTTP PUT request
+     * @param route The route to PUT to.
+     * @param payload The object that will be posted.
+     */
+    public sendHttpPutRequest = async (route: string, payload: object) => {
+        const url = `http://${this.ip}:${PLAYER_PORT}/${route}`;
+        try {
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': this.serverToken
+                },
+                body: JSON.stringify(payload)
+            });
+            const json = await response.json();
+            return json;
+        } catch (error) {
+            Log.info(`Tried to PUT from ${this}${route}, got: ${error.message}`)
+            return null;
+        };
+    }
+
 }

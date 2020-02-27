@@ -74,6 +74,14 @@ export class GameEngine extends EventEmitter {
             player.notify(`Welcome back ${player.name}! May you fare better this time...`)
 
             this.emit(SystemEvent.PLAYER_RECONNECTED, { player: player })
+
+            // TODO: Remove this demo snippet. Sending example HTTP request to player.
+            const getResult = await player.sendHttpGetRequest('my-simple-quest');
+            Log.info(`[HTTP GET RESULT] ${JSON.stringify(getResult)}`);
+            const postResult = await player.sendHttpPostRequest('my-simple-quest', {message: 'I like to POST stuff'});
+            Log.info(`[HTTP POST RESULT] ${JSON.stringify(postResult)}`);
+            const putResult = await player.sendHttpPutRequest('my-simple-quest', {message: 'I like to PUT stuff'});
+            Log.info(`[HTTP PUT RESULT] ${JSON.stringify(putResult)}`);
         } else {
             try {
                 const player = await Player.get(data.token, data.ip, data.port, data.ws)
