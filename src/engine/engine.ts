@@ -21,8 +21,8 @@ export class GameEngine extends EventEmitter {
     /**
      * Get an iterator of all registered players
      */
-    public get players(): IterableIterator<Player> {
-        return this.registeredPlayers.values()
+    public get players(): Array<Player> {
+        return Array.from(this.registeredPlayers.values())
     }
 
     public registerQuest(quest: Quest) {

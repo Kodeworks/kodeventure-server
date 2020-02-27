@@ -2,7 +2,7 @@ import { EventEmitter } from 'events'
 import WebSocket from 'ws'
 import mongoose, { Document, Schema } from 'mongoose'
 
-import { SystemEvent, IPlayerConnectedEvent } from '../engine/events'
+import { SystemEvent, IPlayerConnectedEvent, IPlayerConnectingEvent } from '../engine/events'
 import { Log } from '../logging'
 
 const UserSchema: Schema = new Schema({
@@ -158,10 +158,17 @@ export class Player extends EventEmitter {
     }
 
     /**
-     * Get this plaer's current websocket connection
+     * Get this player's current websocket connection
      */
     public get websocket(): WebSocket {
         return this.ws
+    }
+
+    /**
+     * Get this player's client ip:port
+     */
+    public get hostname(): string {
+        return `${this.ip}:${this.port}`
     }
 
     /**
@@ -186,15 +193,15 @@ export class Player extends EventEmitter {
      * This disregards all user document data, as we're only interested in remote IP, port and websocket object.
      * @param data The player connected event payload
      */
-    public update(data: IPlayerConnectedEvent) {
+    public update(data: IPlayerConnectingEvent) {
         // Make sure we purge all listeners before discarding the object so we make the gc happy
         this.ws.removeAllListeners()
-
-        Log.debug(`${this} reconnected, updating connection: ${data.ip}:${data.port}`, SystemEvent.PLAYER_CONNECTED)
 
         this.ip = data.ip
         this.port = data.port
         this.ws = data.ws
+
+        Log.debug(`${this} reconnected from: ${this.hostname}`, SystemEvent.PLAYER_RECONNECTED)
 
         this.configureWebsocket()
     }
@@ -203,7 +210,7 @@ export class Player extends EventEmitter {
      * Text representation of this player object
      */
     public toString(): string {
-        return `Player<${this.user.name}>[${this.ip}:${this.port}]`
+        return `Player<${this.user.name}>[${this.hostname}]`
     }
 
     /**

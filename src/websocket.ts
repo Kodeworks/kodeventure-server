@@ -172,9 +172,9 @@ export class WebSocketHandler {
         Log.debug(`New connection from: ${source}`, "scoreboard")
 
         for (const player of this.engine.players) {
-            const envelope = { type: SystemEvent.PLAYER_SCORE, data: { player: player }}
+            const envelope = { type: SystemEvent.PLAYER_SCORE, data: { player: player.sanitize() }}
 
-            ws.send(envelope)
+            ws.send(JSON.stringify(envelope))
         }
     }
 
