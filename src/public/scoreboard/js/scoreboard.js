@@ -52,8 +52,16 @@ function Scoreboard() {
    */
   function addPlayer(player) {
     setPlayers(players => {
-      if (players.find(({ name }) => name === player.name)) {
-        // Return same list // do nothing
+      const playerExists = players.findIndex(({ name }) => name === player.name)
+
+      if (playerExists > -1) {
+        // Update player score if score is changed
+        if (players[playerExists].score !== player.score) {
+          players[playerExists].score = player.score
+          return [...players]
+        }
+
+        // Return same list // do nothing if not
         return players
       }
 
