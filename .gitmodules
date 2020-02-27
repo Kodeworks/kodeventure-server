@@ -1,0 +1,3 @@
+[submodule "src/quests"]
+	path = src/quests
+	url = git@gitlab.com:kodeworks/kodeventure-quests.git
