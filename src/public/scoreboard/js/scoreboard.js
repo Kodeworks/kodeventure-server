@@ -83,6 +83,12 @@ function Scoreboard() {
   }
 
 
+
+  function updatePlayerTitles(player) {
+
+  }
+
+
   /**
    * Message receive handler
    * @param message The envelope from the server containing `type` and `data`
@@ -106,15 +112,17 @@ function Scoreboard() {
         break
 
       case 'player_title':
-        //...
+        updatePlayerTitles(data.player)
+        updateKillFeed(`${data.player.name} gained title: ${data.title}`)
+
         break
 
       case 'player_loot_obtained':
-        //...
+        updateKillFeed(`${data.player.name} optained ${data.loot}`)
         break
 
       case 'player_loot_used':
-        //...
+        updateKillFeed(`${data.player.name} used ${data.loot}`)
         break
 
       default:
