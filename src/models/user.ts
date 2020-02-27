@@ -41,7 +41,6 @@ export const UserDatabaseModel = mongoose.model<IUser>('User', UserSchema)
 export class Player extends EventEmitter {
     private user: IUser
     private ip: string
-    private port: number
     private ws: WebSocket
 
     /**
@@ -49,15 +48,13 @@ export class Player extends EventEmitter {
      * static get() method that fetches associated user data from the database.
      * @param user The user document object from the database
      * @param ip The IP the player is connecting from
-     * @param port The port the player has configured for his/her web server instance
      * @param ws The websocket object the player is currently connected with
      */
-    protected constructor(user: IUser, ip: string, port: number, ws: WebSocket) {
+    protected constructor(user: IUser, ip: string, ws: WebSocket) {
         super()
 
         this.user = user
         this.ip = ip
-        this.port = port
         this.ws = ws
 
         this.configureWebsocket()
@@ -168,10 +165,10 @@ export class Player extends EventEmitter {
     }
 
     /**
-     * Get this player's client ip:port
+     * Get this player's client ip
      */
     public get hostname(): string {
-        return `${this.ip}:${this.port}`
+        return `${this.ip}`
     }
 
     /**
@@ -193,7 +190,7 @@ export class Player extends EventEmitter {
 
     /**
      * Update this player object with information from an updated player connection event.
-     * This disregards all user document data, as we're only interested in remote IP, port and websocket object.
+     * This disregards all user document data, as we're only interested in remote IP and websocket object.
      * @param data The player connected event payload
      */
     public update(data: IPlayerConnectingEvent) {
@@ -201,7 +198,6 @@ export class Player extends EventEmitter {
         this.ws.removeAllListeners()
 
         this.ip = data.ip
-        this.port = data.port
         this.ws = data.ws
 
         Log.debug(`${this} reconnected from: ${this.hostname}`, SystemEvent.PLAYER_RECONNECTED)
@@ -234,16 +230,15 @@ export class Player extends EventEmitter {
      *
      * @param token The unique player token
      * @param ip The IP address the player is connecting from
-     * @param port The port the player is running his/her web server on
      */
-    public static async get(token: string, ip: string, port: number, ws: WebSocket): Promise<Player> {
+    public static async get(token: string, ip: string, ws: WebSocket): Promise<Player> {
         const user = await UserDatabaseModel.findOne({'token': token})
 
         if (!user || user.token !== token) {
             throw Error(`Failed to fetch user with token "${token}"`)
         }
 
-        return new Player(user, ip, port, ws)
+        return new Player(user, ip, ws)
     }
 
     /**

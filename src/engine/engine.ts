@@ -84,7 +84,7 @@ export class GameEngine extends EventEmitter {
             Log.info(`[HTTP PUT RESULT] ${JSON.stringify(putResult)}`);
         } else {
             try {
-                const player = await Player.get(data.token, data.ip, data.port, data.ws)
+                const player = await Player.get(data.token, data.ip, data.ws)
 
                 this.registerPlayer(player)
             } catch {
