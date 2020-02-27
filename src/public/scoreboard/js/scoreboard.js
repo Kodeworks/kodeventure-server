@@ -9,15 +9,8 @@ const _players = [
 ]
 
 const _killfeed = [
-  'Welcome back Suprtri',
-  'Suprtri elimiated myth with a straw hat',
-  'Suprtri elimiated sudoole with a straw hat',
-  'myth just rejoined the battle',
-  'sudoole is now spectating myth',
-  'myth received a golden straw hat',
-  'Level up! sudoole is now level 151',
-  'Welcome new player, flyrev',
-  'Suprtri eliminated flyrev with a straw hat'
+  '(test msg) Welcome back mr. Foo',
+  '(test msg) mr. Foo elimiated mr. Bar with a straw hat'
 ]
 //-----------------------------------------------------------------------------
 
