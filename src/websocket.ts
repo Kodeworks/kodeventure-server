@@ -3,7 +3,7 @@ import url from 'url'
 import WebSocket from 'ws'
 
 import { GameEngine } from './engine/engine'
-import { IPlayerConnectedEvent, SystemEvent } from './engine/events'
+import { SystemEvent, IPlayerConnectFailedEvent, IPlayerConnectingEvent } from './engine/events'
 import { Log } from './logging'
 
 /**
@@ -63,13 +63,33 @@ export class WebSocketHandler {
         this.scoreBoard.on('connection', this.handleScoreBoardConnection.bind(this))
         this.scoreBoard.on('close', this.handleScoreBoardClose.bind(this))
         this.scoreBoard.on('error', this.handleScoreBoardError.bind(this))
+    }
 
+    /**
+     * Set up event bindings to and from the different websocket servers and the game engine
+     */
+    private configureEventStreams() {
         // Subscribe to relevant player events that should be broadcast to the scoreboard
-        this.engine.on(SystemEvent.PLAYER_CONNECTED, data => this.broadcastScoreBoardEvent(SystemEvent.PLAYER_CONNECTED, data))
-        this.engine.on(SystemEvent.PLAYER_SCORE, data => this.broadcastScoreBoardEvent(SystemEvent.PLAYER_SCORE, data))
-        this.engine.on(SystemEvent.PLAYER_TITLE, data => this.broadcastScoreBoardEvent(SystemEvent.PLAYER_TITLE, data))
-        this.engine.on(SystemEvent.PLAYER_LOOT_OBTAINED, data => this.broadcastScoreBoardEvent(SystemEvent.PLAYER_LOOT_OBTAINED, data))
-        this.engine.on(SystemEvent.PLAYER_LOOT_USED, data => this.broadcastScoreBoardEvent(SystemEvent.PLAYER_LOOT_USED, data))
+        this.engine.on(SystemEvent.PLAYER_CONNECTED, data => this.broadcastToScoreBoard(SystemEvent.PLAYER_CONNECTED, data))
+        this.engine.on(SystemEvent.PLAYER_SCORE, data => this.broadcastToScoreBoard(SystemEvent.PLAYER_SCORE, data))
+        this.engine.on(SystemEvent.PLAYER_TITLE, data => this.broadcastToScoreBoard(SystemEvent.PLAYER_TITLE, data))
+        this.engine.on(SystemEvent.PLAYER_LOOT_OBTAINED, data => this.broadcastToScoreBoard(SystemEvent.PLAYER_LOOT_OBTAINED, data))
+        this.engine.on(SystemEvent.PLAYER_LOOT_USED, data => this.broadcastToScoreBoard(SystemEvent.PLAYER_LOOT_USED, data))
+    }
+
+    /**
+     * Broadcast a message to all players connected to the server
+     * @param event The event to broadcast
+     * @param data The unserialized data to send
+     */
+    public broadcastToPlayers(event: SystemEvent, data: any) {
+        const envelope = { type: event, data: data }
+
+        for (const client of this.players.clients) {
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(JSON.stringify(envelope))
+            }
+        }
     }
 
     /**
@@ -77,12 +97,7 @@ export class WebSocketHandler {
      * @param event The event to broadcast
      * @param data The unserialized data to send
      */
-    private broadcastScoreBoardEvent(event: SystemEvent, data: any) {
-        // If we have a new player connection, wash the payload
-        if (event === SystemEvent.PLAYER_CONNECTED) {
-            data = { player: data.player }
-        }
-
+    private broadcastToScoreBoard(event: SystemEvent, data: any) {
         // Make sure we strip the player of private information before broadcasting
         if (data.player) {
             data.player = data.player.sanitize()
@@ -90,11 +105,11 @@ export class WebSocketHandler {
 
         const envelope = { type: event, data: data }
 
-        this.scoreBoard.clients.forEach(client => {
+        for (const client of this.scoreBoard.clients) {
             if (client.readyState === WebSocket.OPEN) {
                 client.send(JSON.stringify(envelope));
             }
-        })
+        }
     }
 
     /**
@@ -103,29 +118,32 @@ export class WebSocketHandler {
      * @param request The HTTP request object with the associated connection
      */
     private handlePlayersConnection(ws: WebSocket, request: IncomingMessage) {
-        // Ensure the request has the user token in the Authorization header.
-        if (!request.headers.authorization) {
-            const payload = JSON.stringify({
-                type: SystemEvent.GAME_MESSAGE,
-                data: 'Could not find a valid "Authorization" header in websocket request. Please set it to your player token.'
-            })
-
-            ws.send(payload)
-
-            const source = `${request.connection.remoteAddress}:${request.connection.remotePort}`
-            Log.warning(`Missing auth header from ${source}`, "ws")
-
-            return ws.close()
-        }
-
-        const e: IPlayerConnectedEvent = {
+        const data: IPlayerConnectingEvent = {
             ws: ws,
             ip: request.connection.remoteAddress,
             port: request.connection.remotePort,
             token: request.headers.authorization
         }
 
-        this.engine.emit(SystemEvent.PLAYER_CONNECTED_PRE_AUTH, e)
+        // Ensure the request has the user token in the Authorization header.
+        if (!request.headers.authorization) {
+            const response = JSON.stringify({
+                type: SystemEvent.PLAYER_ERROR,
+                data: { 
+                    msg: 'Could not find a valid "Authorization" header in websocket request. Please set it to your player token.'
+                }
+            })
+
+            ws.send(response)
+            ws.close()
+
+            const failureData = { ...data, error: 'Missing or invalid Authorization header' }
+
+            this.engine.emit(SystemEvent.PLAYER_CONNECT_FAILED, failureData)
+        } else {
+            this.engine.emit(SystemEvent.PLAYER_CONNECTING, data)
+        }
+
     }
 
     /**
@@ -152,6 +170,12 @@ export class WebSocketHandler {
         const source = `${request.connection.remoteAddress}:${request.connection.remotePort}`
 
         Log.debug(`New connection from: ${source}`, "scoreboard")
+
+        for (const player of this.engine.players) {
+            const envelope = { type: SystemEvent.PLAYER_SCORE, data: { player: player }}
+
+            ws.send(envelope)
+        }
     }
 
     /**

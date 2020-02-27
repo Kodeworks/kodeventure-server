@@ -1,25 +1,28 @@
 import { EventEmitter } from 'events'
 
-import { SystemEvent, IPlayerConnectedEvent, IPlayerScoreEvent, IPlayerError } from './events'
+import { SystemEvent, IPlayerConnectedEvent, IPlayerScoreEvent, IPlayerError, IPlayerConnectingEvent } from './events'
 import { Log } from '../logging'
 import { Quest } from "../models/quest"
 import { Player } from "../models/user"
 
 export class GameEngine extends EventEmitter {
-    private players: Map<string, Player>
+    private registeredPlayers: Map<string, Player>
     private quests: Set<Quest>
 
     constructor() {
         super()
 
-        this.players = new Map()
+        this.registeredPlayers = new Map()
         this.quests = new Set()
 
-        this.on(SystemEvent.PLAYER_CONNECTED_PRE_AUTH, this.handlePlayerConnected.bind(this))
+        this.on(SystemEvent.PLAYER_CONNECTING, this.handlePlayerConnecting.bind(this))
+    }
 
-        this.on(SystemEvent.PLAYER_SCORE, (data: IPlayerScoreEvent) => {
-            Log.debug(`${data.player} now has ${data.player.score} points!`, SystemEvent.PLAYER_SCORE)
-        })
+    /**
+     * Get an iterator of all registered players
+     */
+    public get players(): IterableIterator<Player> {
+        return this.registeredPlayers.values()
     }
 
     public registerQuest(quest: Quest) {
@@ -35,7 +38,7 @@ export class GameEngine extends EventEmitter {
      * @param player The player to register
      */
     private registerPlayer(player: Player) {
-        this.players.set(player.userToken, player)
+        this.registeredPlayers.set(player.userToken, player)
         this.subscribeToPlayerEvents(player)
 
         Log.info(`${player}`, SystemEvent.PLAYER_CONNECTED)
@@ -61,16 +64,16 @@ export class GameEngine extends EventEmitter {
      * Event handler for when a player has connected
      * @param data The player connected event data
      */
-    private async handlePlayerConnected(data: IPlayerConnectedEvent) {
-        if (this.players.has(data.token)) {
-            const player = this.players.get(data.token)
+    private async handlePlayerConnecting(data: IPlayerConnectingEvent) {
+        if (this.registeredPlayers.has(data.token)) {
+            const player = this.registeredPlayers.get(data.token)
 
             player.update(data)
 
             // Send a game_message event to the player over the websocket connection
             player.notify(`Welcome back ${player.name}! May you fare better this time...`)
 
-            this.emit(SystemEvent.PLAYER_CONNECTED, { player: player })
+            this.emit(SystemEvent.PLAYER_RECONNECTED, { player: player })
         } else {
             try {
                 const player = await Player.get(data.token, data.ip, data.port, data.ws)
