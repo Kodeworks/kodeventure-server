@@ -26,6 +26,7 @@ export class WebSocketHandler {
     this.scoreBoard = new WebSocket.Server({ noServer: true })
 
     this.configureServers(server)
+    this.configureEventStreams()
   }
 
   /**
