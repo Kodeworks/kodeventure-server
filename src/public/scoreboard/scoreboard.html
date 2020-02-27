@@ -25,12 +25,16 @@
         </main>
     </body>
 
+    <script>
+        const e = React.createElement
+    </script>
+
     <script src="/scoreboard/js/player.js"></script>
     <script src="/scoreboard/js/scoreboard.js"></script>
 
     <script>
         ReactDOM.render(
-            React.createElement(Scoreboard, null, null),
+            e(Scoreboard, null, null),
             document.getElementById('player-list')
         )
     </script>
