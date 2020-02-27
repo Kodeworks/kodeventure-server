@@ -3,7 +3,7 @@ import url from 'url'
 import WebSocket from 'ws'
 
 import { GameEngine } from './engine/engine'
-import { SystemEvent, IPlayerConnectFailedEvent, IPlayerConnectingEvent } from './engine/events'
+import { SystemEvent, IPlayerConnectingEvent } from './engine/events'
 import { Log } from './logging'
 
 /**
@@ -84,11 +84,11 @@ export class WebSocketHandler {
    * @param data The unserialized data to send
    */
   public broadcastToPlayers(event: SystemEvent, data: any) {
-    const envelope = { type: event, data: data }
+    const payload = JSON.stringify({ type: event, data: data })
 
     for (const client of this.players.clients) {
       if (client.readyState === WebSocket.OPEN) {
-        client.send(JSON.stringify(envelope))
+        client.send(payload)
       }
     }
   }
@@ -104,11 +104,11 @@ export class WebSocketHandler {
       data.player = data.player.sanitize()
     }
 
-    const envelope = { type: event, data: data }
+    const payload = JSON.stringify({ type: event, data: data })
 
     for (const client of this.scoreBoard.clients) {
       if (client.readyState === WebSocket.OPEN) {
-        client.send(JSON.stringify(envelope));
+        client.send(payload);
       }
     }
   }

@@ -1,11 +1,16 @@
 import { EventEmitter } from 'events'
-import WebSocket from 'ws'
-import mongoose, { Document, Schema } from 'mongoose'
-
-import { SystemEvent, IPlayerConnectedEvent, IPlayerConnectingEvent } from '../engine/events'
-import { Log } from '../logging'
 import fetch from 'node-fetch'
+import mongoose, { Document, Schema } from 'mongoose'
+import WebSocket from 'ws'
 
+import { SystemEvent, IPlayerConnectingEvent } from '../engine/events'
+import { Log } from '../logging'
+
+const PLAYER_PORT = 4242;
+
+/**
+ * Mongoose User schema for MongoDB
+ */
 const UserSchema: Schema = new Schema({
     token: { type: String, unique: true, required: true },
     server_token: { type: String, unique: true, required: true },
@@ -15,8 +20,9 @@ const UserSchema: Schema = new Schema({
     loot: { type: [String], required: true }
 })
 
-const PLAYER_PORT = 4242;
-
+/**
+ * Convenience interface representing the fields of a user
+ */
 export interface IUser extends Document {
     token: string
     server_token: string
@@ -26,6 +32,9 @@ export interface IUser extends Document {
     loot: string[]
 }
 
+/**
+ * Interface representing the available fields of a public user (when sent to scoreboard or other players)
+ */
 export interface IPublicUser {
     name: string,
     score: number,
@@ -33,6 +42,9 @@ export interface IPublicUser {
     loot: string[]
 }
 
+/**
+ * The Mongoose database model object for the User schema
+ */
 export const UserDatabaseModel = mongoose.model<IUser>('User', UserSchema)
 
 /**
@@ -209,7 +221,7 @@ export class Player extends EventEmitter {
      * Text representation of this player object
      */
     public toString(): string {
-        return `Player<${this.user.name}>[${this.hostname}]`
+        return `Player<${this.name}>[${this.hostname}]`
     }
 
     /**

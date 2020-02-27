@@ -5,9 +5,9 @@ import mongoose from 'mongoose'
 import path from 'path'
 
 import { GameEngine } from './engine/engine'
+import { Log } from './logging'
 import { Routes } from './routes'
 import { WebSocketHandler } from './websocket'
-import { Log } from './logging'
 
 
 /**
@@ -17,7 +17,7 @@ export default class Kodeventure {
     private engine: GameEngine
     private mongoUrl: string = 'mongodb://localhost/kodeventure'
     private httpServer: http.Server
-    private routes: Routes = new Routes()
+    private routes: Routes
     private webapp: express.Application
     private ws: WebSocketHandler
 
@@ -26,14 +26,13 @@ export default class Kodeventure {
      */
     constructor() {
         this.webapp = express()
-        this.engine = new GameEngine()
+        this.routes = new Routes(this.webapp)
+        this.engine = new GameEngine(this.routes)
         this.httpServer = http.createServer(this.webapp)
         this.ws = new WebSocketHandler(this.httpServer, this.engine)
 
         this.config()
         this.mongoSetup()
-
-        this.routes.routes(this.webapp)
     }
 
     public listen(host: string, port: number) {

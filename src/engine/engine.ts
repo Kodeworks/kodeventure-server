@@ -1,36 +1,105 @@
 import { EventEmitter } from 'events'
 
-import { SystemEvent, IPlayerConnectedEvent, IPlayerScoreEvent, IPlayerError, IPlayerConnectingEvent } from './events'
+import { SystemEvent, IPlayerError, IPlayerConnectingEvent } from './events'
 import { Log } from '../logging'
-import { Quest } from "../models/quest"
+import { Quest, ExampleQuest } from "../models/quest"
 import { Player } from "../models/user"
+import { Routes } from 'routes'
 
+/**
+ * Kodeventure Game Engine
+ * Responsible for all event dispatching between components, player registry etc.
+ */
 export class GameEngine extends EventEmitter {
     private registeredPlayers: Map<string, Player>
-    private quests: Set<Quest>
+    private routes: Routes
+    private quests: Map<string, Quest>
 
-    constructor() {
+    /**
+     * Construct a GameEngine
+     */
+    constructor(routes: Routes) {
         super()
 
+        this.quests = new Map()
         this.registeredPlayers = new Map()
-        this.quests = new Set()
+        this.routes = routes
 
-        this.on(SystemEvent.PLAYER_CONNECTING, this.handlePlayerConnecting.bind(this))
+        this.configureGameEvents()
+
+        // Register the quests here, TODO: Move to some more fancy mechanism of defining the quest set
+        this.registerQuest(new ExampleQuest(this))
     }
-
+    
     /**
      * Get an iterator of all registered players
      */
-    public get players(): Array<Player> {
+    public get players(): Player[] {
         return Array.from(this.registeredPlayers.values())
     }
 
-    public registerQuest(quest: Quest) {
-        this.quests.add(quest)
+    /**
+     * Fetch a single Player object based on his/her user token
+     * @param token A player token
+     */
+    public getPlayer(token: string): Player | null {
+        if (this.registeredPlayers.has(token)) {
+            return this.registeredPlayers.get(token)
+        } else {
+            return null
+        }
     }
 
-    public removeQuest(quest: Quest) {
-        this.quests.delete(quest)
+    /**
+     * Fetch a quest based on its baseROute
+     * @param baseRoute The baseRoute (identifier) of the quest
+     */
+    public getQuest(baseRoute: string): Quest | undefined {
+        return this.quests.get(baseRoute)
+    }
+
+    /**
+     * Register a quest to the game engine
+     * @param quest A quest inheriting from the Quest base class
+     */
+    private registerQuest(quest: Quest): void {
+        if (this.quests.has(quest.baseRoute)) {
+            Log.error(`Could not register quest ${quest}, already registered!`, "quest")
+        }
+
+        this.routes.get(quest.baseRoute, (req, res) => {
+            res.json()
+        })
+
+        for (const questRoute of quest.routes) {
+            const endpoint = `${quest.baseRoute}/${questRoute.route}`
+
+            switch (questRoute.method.toUpperCase()) {
+                case 'GET':
+                    this.routes.get(endpoint, questRoute.handler)
+                    break
+                case 'POST':
+                    this.routes.post(endpoint, questRoute.handler)
+                    break
+                case 'PUT':
+                    this.routes.put(endpoint, questRoute.handler)
+                    break
+                default:
+                    Log.error(`Could not register quest route: ${endpoint}, unsupported method ${questRoute.method}`)
+            }
+        }
+
+        this.quests.set(quest.baseRoute, quest)
+
+        Log.info(`Registered quest ${quest}`)
+    }
+
+    /**
+     * Set up event listeners for all relevant game events and bridge events to relevant components
+     */
+    private configureGameEvents() {
+        // Base setup
+        this.on(SystemEvent.PLAYER_CONNECTING, this.handlePlayerConnecting.bind(this))
     }
 
     /**
@@ -47,6 +116,9 @@ export class GameEngine extends EventEmitter {
         player.notify(`Welcome ${player.name}! Great adventures lay before you, across the bit fields of doom...`)
 
         this.emit(SystemEvent.PLAYER_CONNECTED, { player: player })
+
+        // TODO: REMOVE, DEMO ONLY
+        this.emit(SystemEvent.PLAYER_QUEST_UNLOCKED, { player: player, quest: this.getQuest('/example-quest')})
     }
 
     /**
@@ -74,14 +146,6 @@ export class GameEngine extends EventEmitter {
             player.notify(`Welcome back ${player.name}! May you fare better this time...`)
 
             this.emit(SystemEvent.PLAYER_RECONNECTED, { player: player })
-
-            // TODO: Remove this demo snippet. Sending example HTTP request to player.
-            const getResult = await player.sendHttpGetRequest('my-simple-quest');
-            Log.info(`[HTTP GET RESULT] ${JSON.stringify(getResult)}`);
-            const postResult = await player.sendHttpPostRequest('my-simple-quest', {message: 'I like to POST stuff'});
-            Log.info(`[HTTP POST RESULT] ${JSON.stringify(postResult)}`);
-            const putResult = await player.sendHttpPutRequest('my-simple-quest', {message: 'I like to PUT stuff'});
-            Log.info(`[HTTP PUT RESULT] ${JSON.stringify(putResult)}`);
         } else {
             try {
                 const player = await Player.get(data.token, data.ip, data.ws)
