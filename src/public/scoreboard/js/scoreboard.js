@@ -41,7 +41,7 @@ function Scoreboard() {
    */
   function updateKillFeed(newMessage) {
     setKillFeed(killFeed => {
-      return [killFeed.slice(0, 14), newMessage]
+      return [...killFeed.slice(0, 14), newMessage]
     })
   }
 
