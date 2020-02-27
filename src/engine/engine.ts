@@ -15,7 +15,7 @@ export class GameEngine extends EventEmitter {
         this.players = new Map()
         this.quests = new Set()
 
-        this.on(SystemEvent.PLAYER_CONNECTED, this.handlePlayerConnected.bind(this))
+        this.on(SystemEvent.PLAYER_CONNECTED_PRE_AUTH, this.handlePlayerConnected.bind(this))
 
         this.on(SystemEvent.PLAYER_SCORE, (data: IPlayerScoreEvent) => {
             Log.debug(`${data.player} now has ${data.player.score} points!`, SystemEvent.PLAYER_SCORE)
@@ -42,6 +42,8 @@ export class GameEngine extends EventEmitter {
 
         // Send a game_message event to the player over the websocket connection
         player.notify(`Welcome ${player.name}! Great adventures lay before you, across the bit fields of doom...`)
+
+        this.emit(SystemEvent.PLAYER_CONNECTED, { player: player })
     }
 
     /**
@@ -67,6 +69,8 @@ export class GameEngine extends EventEmitter {
 
             // Send a game_message event to the player over the websocket connection
             player.notify(`Welcome back ${player.name}! May you fare better this time...`)
+
+            this.emit(SystemEvent.PLAYER_CONNECTED, { player: player })
         } else {
             try {
                 const player = await Player.get(data.token, data.ip, data.port, data.ws)

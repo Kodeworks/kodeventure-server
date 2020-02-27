@@ -125,7 +125,7 @@ export class WebSocketHandler {
             token: request.headers.authorization
         }
 
-        this.engine.emit(SystemEvent.PLAYER_CONNECTED, e)
+        this.engine.emit(SystemEvent.PLAYER_CONNECTED_PRE_AUTH, e)
     }
 
     /**

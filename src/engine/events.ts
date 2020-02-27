@@ -14,6 +14,7 @@ export const enum SystemEvent {
 
     // User related events
     PLAYER_CONNECTED = "player_connected",
+    PLAYER_CONNECTED_PRE_AUTH = "player_connected_pre_auth",
     PLAYER_DISCONNECTED = "player_disconnected",
     PLAYER_SCORE = "player_score_change",
     PLAYER_TITLE = "player_title",
