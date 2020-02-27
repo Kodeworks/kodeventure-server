@@ -1,0 +1,93 @@
+body {
+  font-family: Inter,-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol;
+  line-height: 1.625;
+  font-size: 14px;
+}
+
+h1 {
+  font-size: 32px;
+  font-weight: 500;
+}
+
+.mainHeader {
+  width: 100%;
+  background-color: #1d80ac;
+  color: #fff;
+  height: 200px;
+  position: relative;
+  margin-bottom: 35px;
+}
+
+.mainHeader-container {
+  width: 1040px;
+  margin: 0 auto;
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.logo {
+  margin-bottom: -6px;
+  margin-left: 2px;
+}
+.logo img{
+  width: 150px;
+}
+
+.scoreboard {
+  width: 1040px;
+  margin: 0 auto;
+}
+
+.scoreboard-title {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-left: 25px;
+  padding-right: 25px;
+}
+
+.scoreboard-title div {
+  font-weight: 600;
+  color: #1d80ac;
+  font-size: 16px;
+}
+
+/* Scoreboard stuff
+-----------------------------------------------------------------------------*/
+.player {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  height: 55px;
+  padding-left: 25px;
+  padding-right: 25px;
+}
+
+.player:nth-child(odd) {
+  background-color: #efefef;
+}
+
+.player-rank {
+  width: 45px;
+  margin-right: 15px;
+  font-size: 18px;
+  font-weight: 500;
+  color: #1d80ac;
+}
+.player-name {
+  font-weight: 600;
+  flex-grow: 2;
+}
+
+.player-titles {
+  width: 250px;
+}
+.player-score {
+  width: 150px;
+}
+
+
