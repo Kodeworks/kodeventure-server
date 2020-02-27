@@ -9,15 +9,8 @@ const _players = [
 ]
 
 const _killfeed = [
-  'Welcome back Suprtri',
-  'Suprtri elimiated myth with a straw hat',
-  'Suprtri elimiated sudoole with a straw hat',
-  'myth just rejoined the battle',
-  'sudoole is now spectating myth',
-  'myth received a golden straw hat',
-  'Level up! sudoole is now level 151',
-  'Welcome new player, flyrev',
-  'Suprtri eliminated flyrev with a straw hat'
+  '(test msg) Welcome back mr. Foo',
+  '(test msg) mr. Foo elimiated mr. Bar with a straw hat'
 ]
 //-----------------------------------------------------------------------------
 
@@ -41,6 +34,47 @@ function Scoreboard() {
     setKillFeed(_killfeed)
   }, [])
 
+
+  /**
+   * Adds message to event feed. Ensure feed only contains 15 messages.
+   * @param {string} newMessage
+   */
+  function updateKillFeed(newMessage) {
+    setKillFeed(killFeed => {
+      return [killFeed.slice(0, 14), newMessage]
+    })
+  }
+
+
+  /**
+   * Add player to scoreboard. Checks of player exists by name (for now) before appending new player.
+   * @param {Player} player
+   */
+  function addPlayer(player) {
+    setPlayers(players => {
+      if (players.find(({ name }) => name === player.name)) {
+        // Return same list // do nothing
+        return players
+      }
+
+      return [...players, player]
+    })
+  }
+
+
+  /**
+   * Updates scoreboard on player_score event by sorting the players by score
+   */
+  function updateScoreBoard() {
+
+    // Sort by highest score
+    setPlayers(players => {
+      players.sort((a, b) => b.score - a.score)
+      return [...players]
+    })
+  }
+
+
   /**
    * Message receive handler
    * @param message The envelope from the server containing `type` and `data`
@@ -50,11 +84,17 @@ function Scoreboard() {
 
     switch (type) {
       case 'player_connected':
-        setPlayers(players => [...players, data.player])
+        updateKillFeed(`${data.player.name} just connected!`)
+        addPlayer(data.player)
+        break
+
+      case 'player_reconnected':
+        // Do nothing on payer reconnect
         break
 
       case 'player_score':
-        //...
+        addPlayer(data.player)
+        updateScoreBoard()
         break
 
       case 'player_title':
@@ -74,15 +114,21 @@ function Scoreboard() {
     }
   }
 
+
+  /**
+   * Scoreboard connected handler
+   */
   function handleConnected() {
     console.info('Im connected!')
   }
+
 
   return e(React.Fragment, null,
     KillFeed(killFeed),
     PlayerList(players)
   )
 }
+
 
 /**
  * Renders the player list
@@ -101,12 +147,12 @@ function PlayerList(players) {
 }
 
 
+
 /**
  * Renders the kill feed
  * @param {string[]} feed A list of messages for the feed
  */
 function KillFeed(feed) {
-
   return e('div', { className: 'kill-feed' },
     e('h2', { className: 'kill-feed-header' }, 'Last events'),
     e('ul', { className: 'kill-feed-list' }, feed.map((msg, index) => e('li', null, msg)))
