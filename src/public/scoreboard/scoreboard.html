@@ -2,11 +2,36 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title>Kodeventure</title>
+        <title>Kodeventure Scoreboard</title>
 
+        <link rel="stylesheet" type="text/css" href="css/reset.css">
         <link rel="stylesheet" type="text/css" href="scoreboard/style.css">
+
+        <script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
+        <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
     </head>
     <body>
-        <h1>Kodeventure</h1>
+        <header class="mainHeader">
+            <div class="mainHeader-container">
+                <div class="logo">
+                    <img src="https://kodeworks.no/assets/logos/kodeworks.svg" alt="Kodeworks logo">
+                </div>
+                <h1>Kodeventure Scoreboard</h1>
+            </div>
+        </header>
+
+        <main class="scoreboard">
+            <div id="player-list"></div>
+        </main>
     </body>
+
+    <script src="/scoreboard/js/player.js"></script>
+    <script src="/scoreboard/js/scoreboard.js"></script>
+
+    <script>
+        ReactDOM.render(
+            React.createElement(Scoreboard, null, null),
+            document.getElementById('player-list')
+        )
+    </script>
 </html>
