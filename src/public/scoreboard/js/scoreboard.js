@@ -57,6 +57,18 @@ function Scoreboard() {
         //...
         break
 
+      case 'player_title':
+        //...
+        break
+
+      case 'player_loot_obtained':
+        //...
+        break
+
+      case 'player_loot_used':
+        //...
+        break
+
       default:
         console.warn('Unknown event')
     }
