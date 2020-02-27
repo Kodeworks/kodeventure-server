@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events'
+import { Request, Response } from 'express'
 
 import { SystemEvent, IPlayerError, IPlayerConnectingEvent } from './events'
 import { Log } from '../logging'
@@ -32,7 +33,7 @@ export class GameEngine extends EventEmitter {
     }
     
     /**
-     * Get an iterator of all registered players
+     * Get an array of all registered players
      */
     public get players(): Player[] {
         return Array.from(this.registeredPlayers.values())
@@ -42,16 +43,12 @@ export class GameEngine extends EventEmitter {
      * Fetch a single Player object based on his/her user token
      * @param token A player token
      */
-    public getPlayer(token: string): Player | null {
-        if (this.registeredPlayers.has(token)) {
-            return this.registeredPlayers.get(token)
-        } else {
-            return null
-        }
+    public getPlayer(token: string): Player | undefined {
+        return this.registeredPlayers.get(token)
     }
 
     /**
-     * Fetch a quest based on its baseROute
+     * Fetch a quest based on its baseRoute
      * @param baseRoute The baseRoute (identifier) of the quest
      */
     public getQuest(baseRoute: string): Quest | undefined {
@@ -64,13 +61,14 @@ export class GameEngine extends EventEmitter {
      */
     private registerQuest(quest: Quest): void {
         if (this.quests.has(quest.baseRoute)) {
-            Log.error(`Could not register quest ${quest}, already registered!`, "quest")
+            return Log.error(`Could not register quest ${quest}, already registered!`, "engine")
         }
 
-        this.routes.get(quest.baseRoute, (req, res) => {
-            res.json()
+        this.routes.get(quest.baseRoute, (req: Request, res: Response ) => {
+            res.json({ description: quest.description })
         })
 
+        // Register potential server routes the quest needs to function
         for (const questRoute of quest.routes) {
             const endpoint = `${quest.baseRoute}/${questRoute.route}`
 
@@ -91,7 +89,7 @@ export class GameEngine extends EventEmitter {
 
         this.quests.set(quest.baseRoute, quest)
 
-        Log.info(`Registered quest ${quest}`)
+        Log.info(`Registered quest ${quest}`, "engine")
     }
 
     /**
@@ -159,7 +157,7 @@ export class GameEngine extends EventEmitter {
 
                 const source = `${data.ip}:${data.port}`
 
-                Log.error(`${payload.msg} (connection attempt: ${source})`, "db")
+                Log.error(`${payload.msg} (connection attempt: ${source})`, SystemEvent.PLAYER_CONNECTING)
             }
         }
     }

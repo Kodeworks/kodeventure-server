@@ -198,6 +198,8 @@ export class Player extends EventEmitter {
      */
     public save() {
         this.user.save()
+
+        Log.debug(`Persisted current state of ${this}`, "db")
     }
 
     /**
@@ -267,8 +269,8 @@ export class Player extends EventEmitter {
      * @param msg The serialized message envelope from this player
      */
     private handleMessage(msg: string) {
-        // TODO: Parse JSON and emit event
-        Log.debug(`${this}: ${msg}`, "msg")
+        // TODO: What do? Different event type for actual quest related messages?
+        Log.debug(`${this}: ${msg}`, SystemEvent.PLAYER_MSG)
     }
 
     /**
@@ -277,7 +279,7 @@ export class Player extends EventEmitter {
      */
     private handleError(error: Error) {
         // TODO: do what. emit event? lot?
-        Log.error(`${this}: ${error}`, "ws")
+        Log.error(`${this}: ${error}`, SystemEvent.PLAYER_ERROR)
     }
 
     /**
@@ -307,7 +309,7 @@ export class Player extends EventEmitter {
             const json = await response.json();
             return json;
         } catch (error) {
-            Log.info(`Tried to GET from ${this}${route}, got: ${error.message}`)
+            Log.info(`Tried to GET from ${this}${route}, got: ${error.message}`, SystemEvent.PLAYER_QUEST_RESPONSE)
             return null;
         }
     }
@@ -331,7 +333,7 @@ export class Player extends EventEmitter {
             const json = await response.json();
             return json;
         } catch (error) {
-            Log.info(`Tried to POST from ${this}${route}, got: ${error.message}`)
+            Log.info(`Tried to POST from ${this}${route}, got: ${error.message}`, SystemEvent.PLAYER_QUEST_RESPONSE)
             return null;
         };
     }
@@ -355,7 +357,7 @@ export class Player extends EventEmitter {
             const json = await response.json();
             return json;
         } catch (error) {
-            Log.info(`Tried to PUT from ${this}${route}, got: ${error.message}`)
+            Log.info(`Tried to PUT from ${this}${route}, got: ${error.message}`, SystemEvent.PLAYER_QUEST_RESPONSE)
             return null;
         };
     }

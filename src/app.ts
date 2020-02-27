@@ -37,7 +37,7 @@ export default class Kodeventure {
 
     public listen(host: string, port: number) {
         this.httpServer.listen(port, host, () => {
-            Log.info(`Server started listening on ${host}:${port}`)
+            Log.info(`Started listening on ${host}:${port}`, "server")
         })
     }
 

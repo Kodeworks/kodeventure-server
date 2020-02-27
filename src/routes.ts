@@ -1,4 +1,4 @@
-import { Application } from 'express'
+import { Application, Request, Response } from 'express'
 
 import { UserController } from './controllers/userController'
 import { ScoreboardController } from './controllers/scoreboardController'
@@ -28,7 +28,7 @@ export class Routes {
      * @param route The route to register
      * @param handler The request handler for the endpoiunt
      */
-    public get(route: string, handler: (req: any, res: any) => void) {
+    public get(route: string, handler: (req: Request, res: Response) => void) {
         if (this.routes.has(route)) {
             return Log.error(`Could not add route ${route} as it is already registered`, "routes")
         }
@@ -42,7 +42,7 @@ export class Routes {
      * @param route The route to register
      * @param handler The request handler for the endpoiunt
      */
-    public post(route: string, handler: (req: any, res: any) => void) {
+    public post(route: string, handler: (req: Request, res: Response) => void) {
         if (this.routes.has(route)) {
             return Log.error(`Could not add route ${route} as it is already registered`, "routes")
         }
@@ -56,7 +56,7 @@ export class Routes {
      * @param route The route to register
      * @param handler The request handler for the endpoiunt
      */
-    public put(route: string, handler: (req: any, res: any) => void) {
+    public put(route: string, handler: (req: Request, res: Response) => void) {
         if (this.routes.has(route)) {
             return Log.error(`Could not add route ${route} as it is already registered`, "routes")
         }

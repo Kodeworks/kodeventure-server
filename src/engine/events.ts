@@ -18,6 +18,7 @@ export const enum SystemEvent {
     PLAYER_CONNECTED = "player_connected",
     PLAYER_RECONNECTED = "player_reconnected",
     PLAYER_DISCONNECTED = "player_disconnected",
+    PLAYER_MSG = "player_msg",
     PLAYER_SCORE = "player_score",
     PLAYER_TITLE = "player_title",
     PLAYER_LOOT_OBTAINED = "player_loot_obtained",
@@ -86,6 +87,14 @@ export interface IPlayerReconnectedEvent extends IPlayerEvent {}
  * Event data structure for player disconnected
  */
 export interface IPlayerDisconnectedEvent extends IPlayerEvent {}
+
+/**
+ * Event data structure for player message
+ * @param msg The message received from the player
+ */
+export interface IPlayerMsgEvent extends IPlayerEvent {
+    msg: string
+}
 
 /**
  * Event data structure for player score changed

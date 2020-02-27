@@ -84,13 +84,7 @@ export class WebSocketHandler {
    * @param data The unserialized data to send
    */
   public broadcastToPlayers(event: SystemEvent, data: any) {
-    const payload = JSON.stringify({ type: event, data: data })
-
-    for (const client of this.players.clients) {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(payload)
-      }
-    }
+    this.broadcast(this.players, event, data)
   }
 
   /**
@@ -99,6 +93,17 @@ export class WebSocketHandler {
    * @param data The unserialized data to send
    */
   private broadcastToScoreBoard(event: SystemEvent, data: any) {
+    this.broadcast(this.scoreBoard, event, data)
+  }
+
+  /**
+   * Broadcast a message to all clients connected to provided server. Will sanitize
+   * any "player" property in the event payload.
+   * @param server The websocket server instance to broadcast to
+   * @param event The event to broadcast
+   * @param data The unserialized data to send
+   */
+  private broadcast(server: WebSocket.Server, event: SystemEvent, data: any) {
     // Make sure we strip the player of private information before broadcasting
     if (data.player) {
       data.player = data.player.sanitize()
@@ -106,7 +111,7 @@ export class WebSocketHandler {
 
     const payload = JSON.stringify({ type: event, data: data })
 
-    for (const client of this.scoreBoard.clients) {
+    for (const client of server.clients) {
       if (client.readyState === WebSocket.OPEN) {
         client.send(payload);
       }
@@ -184,7 +189,7 @@ export class WebSocketHandler {
    * Server event handler for "close" events
    */
   private handleScoreBoardClose() {
-    Log.error(`Score board server closed`, "scoreboard")
+    Log.error(`Score board server closed`, "ws")
   }
 
   /**
@@ -192,6 +197,6 @@ export class WebSocketHandler {
    * @param error The error that was thrown
    */
   private handleScoreBoardError(error: Error) {
-    Log.error(`Score board server error: ${error}`, "scoreboard")
+    Log.error(`Score board server error: ${error}`, "ws")
   }
 }

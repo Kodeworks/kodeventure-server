@@ -1,3 +1,5 @@
+import { Request, Response } from 'express'
+
 import { GameEngine } from "../engine/engine"
 import { SystemEvent, IPlayerQuestUnlockedEvent } from '../engine/events'
 import { Log } from "../logging"
@@ -10,7 +12,7 @@ import { Player } from './user'
 export interface IQuestRoute {
     route: string,
     method: 'GET' | 'POST' | 'PUT',
-    handler: (request: any, response: any) => void
+    handler: (request: Request, response: Response) => void
 }
 
 /**
@@ -65,7 +67,7 @@ export abstract class Quest {
      * Text representation of this Quest object
      */
     public toString(): string {
-        return `Quest<${this.baseRoute}>[${this.description.slice(0, 50)}]`
+        return `Quest<${this.baseRoute}>[${this.description.slice(0, 40)}]`
     }
 
     /**
@@ -80,7 +82,7 @@ export abstract class Quest {
      * and that the Player has access to this quest. Returns the Player object if everything is OK, null otherwise.
      * @param req Express.js request object
      */
-    protected authorize(req: any): Player | null {
+    protected authorize(req: Request): Player | null {
         const player = this.engine.getPlayer(req.headers.authorization)
 
         if (!player || !this.hasAccess(player)) return null
@@ -116,11 +118,11 @@ export class ExampleQuest extends Quest {
     }
 
     /**
-     * 
-     * @param player 
+     * Event handler for event received when a Player has unlocked this quest
+     * @param player A Player object
      */
     public async handleNewPlayer(player: Player): Promise<void> {
-        Log.debug(`Player ${player} unlocked quest ${this}`)
+        Log.debug(`${player} unlocked ${this}`, SystemEvent.PLAYER_QUEST_UNLOCKED)
 
         this.startPeriodicTask(player)
     }
@@ -133,43 +135,48 @@ export class ExampleQuest extends Quest {
             {
                 route: '/part-one',
                 method: 'POST',
-                handler: this.exampleCustomQuestHandle
+                handler: this.exampleCustomQuestHandler
             }
         ]
     }
 
     /**
-     * Example implementation of a quest challenge against the Player
+     * Example implementation of a quest challenge against the Player's web server
      * @param player A Player object
      */
     public async startPeriodicTask(player: Player): Promise<void> {
+        // Set a max number of runs before we're done
+        let iterations = 0
+        let totalIterations = 10
+        let success = 0
+        let fail = 0
+
         // TODO: Wrap this stuff and put it in the upcoming task scheduler
         const challengePlayer = async () => {
-            const getResult = await player.sendHttpGetRequest('my-simple-quest');
-            Log.debug(`[HTTP GET RESULT] ${JSON.stringify(getResult)}`);
-    
             const postResult = await player.sendHttpPostRequest('my-simple-quest', {message: 'Who invented C++?'});
-            Log.debug(`[HTTP POST RESULT] ${JSON.stringify(postResult)}`);
-    
+
+            Log.debug(`${player} ${JSON.stringify(postResult)}`, SystemEvent.PLAYER_QUEST_RESPONSE);
+
             // Needs more validation, don't want to call method if answer is a number for instance
             if (postResult && postResult.answer && postResult.answer.toLowerCase() === 'bjarne stroustrup') {
                 player.addScore(4)
+                success++
             } else {
                 player.addScore(-2)
-            }
-    
-            const putResult = await player.sendHttpPutRequest('my-simple-quest', {message: 'Who likes chili cheese best in the whole world?'});
-            Log.debug(`[HTTP PUT RESULT] ${JSON.stringify(putResult)}`);
-    
-            // Needs more validation, don't want to call method if answer is a number for instance
-            if (postResult && postResult.answer && postResult.answer.toLowerCase() === 'tri') {
-                player.addScore(5)
-            } else {
-                player.addScore(-3)
+                player.notify(`You are failing the ${this.baseRoute} quest, step it up! Lost 2 points.`)
+                fail++
             }
 
-            // 20s intervals
-            setTimeout(challengePlayer, 20000)
+            if (iterations++ < totalIterations) {
+                // 20s intervals
+                setTimeout(challengePlayer, 20000)
+            } else {
+                player.notify(`Quest ${this.baseRoute} complete! You scored ${success}/${totalIterations}`)
+
+                if (fail > 5) {
+                    player.addTitle('Noobman 9000')
+                }
+            }
         }
 
         challengePlayer()
@@ -180,7 +187,7 @@ export class ExampleQuest extends Quest {
      * @param req Express.js request object
      * @param res Express.js response object
      */
-    public exampleCustomQuestHandle(req: any, res: any) {
+    public exampleCustomQuestHandler(req: Request, res: Response) {
         // Ensure that the player exists and has access to this quest
         const player = this.authorize(req)
 
