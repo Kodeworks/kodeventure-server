@@ -25,14 +25,16 @@ export default class Kodeventure {
      * Construct a Kodeventure instance
      */
     constructor() {
+        // Express app and MongoDB
         this.webapp = express()
+        this.config()
+        this.mongoSetup()
+
+        // Game configuration, web server and websockets
         this.routes = new Routes(this.webapp)
         this.engine = new GameEngine(this.routes)
         this.httpServer = http.createServer(this.webapp)
         this.ws = new WebSocketHandler(this.httpServer, this.engine)
-
-        this.config()
-        this.mongoSetup()
     }
 
     public listen(host: string, port: number) {

@@ -15,18 +15,120 @@ export interface IQuestRoute {
     handler: (request: Request, response: Response) => void
 }
 
+
+/**
+ * Config object for constructing an Experience container
+ */
+export interface IExperienceConfig {
+    // The amount of XP gained every successful challenge
+    successXp: number
+    // The amount of XP lost every failed challenge
+    failXp: number
+    // The total number of times XP can be gained
+    maxSuccess: number
+    // The total number of times XP can be lost
+    maxFail: number
+    // The maximum number of iterations before the quest is consideres failed
+    maxIterations: number
+}
+
+
+/**
+ * Experience score tracking container.
+ * Takes a gain value and a loss value, which is how much xp will be gained or lost
+ * when a Player fails or succeeds in responding to a challenge.
+ * There is a cap to how much loss or gain can be achieved. The quest is completed
+ * when there is no more positive xp to be gained, even if there is more left to
+ * be lost.
+ */
+export class Experience {
+    // Score tracking
+    private successXp: number
+    private failXp: number
+    private maxSuccess: number
+    private maxFail: number
+    private iterations: number
+    private maxIterations: number
+
+    // Internal stats counters tracking how many successes and failures the player has
+    private successCount: number
+    private failCount: number
+
+    /**
+     * Construct a quest experience container.
+     *
+     * @param successXp The number of experience points the player gains each successful challenge
+     * @param failXp The number of experience points the player loses each failed challenge
+     * @param maxSuccess The max number of times XP can be gained. Quest is complete when no more XP can be gained. Positive number.
+     * @param maxFail The max number of times XP can be lost. Must be a negative number.
+     * @param maxIterations The maximum number of iterations before the quest is considered failed.
+     */
+    constructor(successXp: number, failXp: number, maxSuccess: number, maxFail: number, maxIterations: number) {
+        if (successXp <= 0) throw new Error('Gain value must be positive')
+        if (failXp > 0) throw new Error('Loss value must be 0 or negative')
+
+        this.successXp = successXp
+        this.failXp = failXp
+        this.maxSuccess = maxSuccess
+        this.maxFail = maxFail
+        this.maxIterations = maxIterations
+        this.successCount = 0
+        this.failCount = 0
+        this.iterations = 0
+    }
+
+    public gain(): number {
+        this.iterations++
+
+        if (this.maxSuccess <= 0) return 0
+
+        this.maxSuccess
+        this.successCount++
+
+        return this.successXp
+    }
+
+    public lose(): number {
+        this.iterations++
+
+        if (this.maxFail <= 0) return 0
+
+        this.maxFail--
+        this.failCount++
+
+        return this.failXp
+    }
+
+    public get stats(): [number, number, number] {
+        return [this.successCount, this.failCount, this.iterations]
+    }
+
+    /**
+     * Whether or not there is more XP to be gained (if quest is complete or not)
+     */
+    public get completed(): boolean {
+        return this.maxSuccess <= 0 || this.iterations >= this.maxIterations
+    }
+}
+
+
 /**
  * Base class for creating a Kodeventure quest
  */
 export abstract class Quest {
+    // The config parameters for the XP points given or lost in this quest
+    private xpConfig: IExperienceConfig
+
     // A reference to the game engine this quest is registered to
     protected engine: GameEngine
     // The set of players that have unlocked this quest
     protected players: Map<string, Player>
+    // The XP registry for each player that has unlocked this quest
+    protected xp: Map<Player, Experience>
 
     // The quest route serves as an identifier for the quest. If this quest is available for
     // the player, a HTTP GET to the baseRoute of this quest should return the description of
-    // this quest.
+    // this quest. Without a leading /
     public abstract baseRoute: string
     // The description of this quest, or some hints, or just some witty information if the user
     // should figure it out for themselves.
@@ -38,9 +140,11 @@ export abstract class Quest {
      * Construct a quest object
      * @param engine The game engine this quest is registered to
      */
-    constructor(engine: GameEngine) {
+    constructor(engine: GameEngine, xpConfig: IExperienceConfig) {
         this.engine = engine
         this.players = new Map()
+        this.xp = new Map()
+        this.xpConfig = xpConfig
 
         this.subscribeToGameEvents()
     }
@@ -96,6 +200,17 @@ export abstract class Quest {
     private subscribeToGameEvents() {
         this.engine.on(SystemEvent.PLAYER_QUEST_UNLOCKED, (data: IPlayerQuestUnlockedEvent) => {
             this.players.set(data.player.userToken, data.player)
+
+            // Create and set up an XP container for this player, so the quest can keep track of its state
+            const xpContainer = new Experience(
+                this.xpConfig.successXp,
+                this.xpConfig.failXp,
+                this.xpConfig.maxSuccess,
+                this.xpConfig.maxFail,
+                this.xpConfig.maxIterations
+            )
+            this.xp.set(data.player, xpContainer)
+
             this.handleNewPlayer(data.player)
         })
     }
@@ -108,13 +223,19 @@ export abstract class Quest {
 export class ExampleQuest extends Quest {
     // This is a starter quest, meaning it can be unlocked via the questmaster
     public starterQuest: boolean = true
-    // Base route will be prefixed to all IQuestRoutes in this.routes
-    public baseRoute: string = '/example-quest'
+    // Base route will be prefixed to all IQuestRoutes in this.routes (without leading /)
+    public baseRoute: string = 'example-quest'
     // Description will be shown when requesting HTTP GET to the baseRoute
     public description: string = 'Static computer science trivia'
 
     constructor(engine: GameEngine) {
-        super(engine)
+        super(engine, {
+            successXp: 4,
+            failXp: -2,
+            maxSuccess: 10,
+            maxFail: 5,
+            maxIterations: 20
+        })
     }
 
     /**
@@ -133,13 +254,7 @@ export class ExampleQuest extends Quest {
      * The custom routes for this quest that the used has to call in order to solve the quest
      */
     public get routes(): IQuestRoute[] {
-        return [
-            {
-                route: '/part-one',
-                method: 'POST',
-                handler: this.exampleCustomQuestHandler
-            }
-        ]
+        return []
     }
 
     /**
@@ -147,11 +262,8 @@ export class ExampleQuest extends Quest {
      * @param player A Player object
      */
     public async startPeriodicTask(player: Player): Promise<void> {
-        // Set a max number of runs before we're done
-        let iterations = 0
-        let totalIterations = 10
-        let success = 0
-        let fail = 0
+        // Get the Player XP tracker object
+        const xp = this.xp.get(player)
 
         // TODO: Wrap this stuff and put it in the upcoming task scheduler
         const challengePlayer = async () => {
@@ -161,45 +273,28 @@ export class ExampleQuest extends Quest {
 
             // Needs more validation, don't want to call method if answer is a number for instance
             if (postResult && postResult.answer && postResult.answer.toLowerCase() === 'bjarne stroustrup') {
-                player.addScore(4)
-                success++
+                player.addScore(xp.gain())
             } else {
-                player.addScore(-2)
+                player.addScore(xp.lose())
                 player.notify(`You are failing the ${this.baseRoute} quest, step it up! Lost 2 points.`)
-                fail++
             }
 
-            if (iterations++ < totalIterations) {
-                // 20s intervals
-                setTimeout(challengePlayer, 20000)
-            } else {
-                player.notify(`Quest ${this.baseRoute} complete! You scored ${success}/${totalIterations}`)
+            console.log(xp.stats)
 
-                if (fail > 5) {
+            if (!xp.completed) {
+                // 20s intervals
+                setTimeout(challengePlayer, 2000)
+            } else {
+                const [ success, fail, total ] = xp.stats
+
+                player.notify(`Quest ${this.baseRoute} complete! You scored ${success} success, ${fail} fails (${total} total)`)
+
+                if (fail > 3) {
                     player.addTitle('Noobman 9000')
                 }
             }
         }
 
         challengePlayer()
-    }
-
-    /**
-     * Example quest handle where the Player must post something in order to solve the quest
-     * @param req Express.js request object
-     * @param res Express.js response object
-     */
-    public exampleCustomQuestHandler(req: Request, res: Response) {
-        // Ensure that the player exists and has access to this quest
-        const player = this.authorize(req)
-
-        if (!player) {
-            res.status(403)
-            res.json({ type: SystemEvent.PLAYER_ERROR, data: { msg: "You do not have access to this secret domain" }})
-        } else {
-            // if (req.body.message === 'correct_answer') doStuff()
-            // else
-            res.json({ msg: `Hello ${player.name}, are you feeling frisky?` })
-        }
     }
 }

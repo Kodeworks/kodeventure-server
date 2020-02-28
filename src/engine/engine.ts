@@ -67,13 +67,13 @@ export class GameEngine extends EventEmitter {
             return Log.error(`Could not register quest ${quest}, already registered!`, "engine")
         }
 
-        this.routes.get(quest.baseRoute, (req: Request, res: Response ) => {
+        this.routes.get(`/quests/${quest.baseRoute}`, (req: Request, res: Response ) => {
             res.json({ description: quest.description })
         })
 
         // Register potential server routes the quest needs to function
         for (const questRoute of quest.routes) {
-            const endpoint = `${quest.baseRoute}/${questRoute.route}`
+            const endpoint = `/quests/${quest.baseRoute}/${questRoute.route}`
 
             switch (questRoute.method.toUpperCase()) {
                 case 'GET':
