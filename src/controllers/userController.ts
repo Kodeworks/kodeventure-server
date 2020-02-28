@@ -5,8 +5,8 @@ import { DUNGEON_MASTER_KEY } from '../config'
 
 const authorize = (req: Request, res: Response): boolean => {
     if (req.headers.authorization !== DUNGEON_MASTER_KEY) {
-        res.status(403)
-        res.send({'status': 403, 'error': 'These are not the droids you are looking for'})
+        res.status(401)
+        res.send({'status': 401, 'error': 'These are not the droids you are looking for'})
         return false
     } else {
         return true
