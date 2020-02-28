@@ -67,7 +67,7 @@ export abstract class Quest {
      * Text representation of this Quest object
      */
     public toString(): string {
-        return `Quest<${this.baseRoute}>[${this.description.slice(0, 40)}]`
+        return `${this.baseRoute} (${this.description})`
     }
 
     /**
@@ -111,7 +111,7 @@ export class ExampleQuest extends Quest {
     // Base route will be prefixed to all IQuestRoutes in this.routes
     public baseRoute: string = '/example-quest'
     // Description will be shown when requesting HTTP GET to the baseRoute
-    public description: string = 'Some say, that bits should be left shifted by 4'
+    public description: string = 'Static computer science trivia'
 
     constructor(engine: GameEngine) {
         super(engine)
@@ -123,6 +123,8 @@ export class ExampleQuest extends Quest {
      */
     public async handleNewPlayer(player: Player): Promise<void> {
         Log.debug(`${player} unlocked ${this}`, SystemEvent.PLAYER_QUEST_UNLOCKED)
+
+        player.notify(`You have unlocked ${this}, a challenge awaits!`)
 
         this.startPeriodicTask(player)
     }

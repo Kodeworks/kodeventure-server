@@ -7,6 +7,8 @@ import { Quest, ExampleQuest } from "../models/quest"
 import { Player } from "../models/user"
 import { Routes } from 'routes'
 
+const DB_PERSIST_INTERVAL: number = 30000 // ms
+
 /**
  * Kodeventure Game Engine
  * Responsible for all event dispatching between components, player registry etc.
@@ -27,6 +29,7 @@ export class GameEngine extends EventEmitter {
         this.routes = routes
 
         this.configureGameEvents()
+        this.startPeriodicDatabaseBackup()
 
         // Register the quests here, TODO: Move to some more fancy mechanism of defining the quest set
         this.registerQuest(new ExampleQuest(this))
@@ -128,6 +131,25 @@ export class GameEngine extends EventEmitter {
         player.on(SystemEvent.PLAYER_TITLE, data => this.emit(SystemEvent.PLAYER_TITLE, data))
         player.on(SystemEvent.PLAYER_LOOT_OBTAINED, data => this.emit(SystemEvent.PLAYER_LOOT_OBTAINED, data))
         player.on(SystemEvent.PLAYER_LOOT_USED, data => this.emit(SystemEvent.PLAYER_LOOT_USED, data))
+    }
+
+    /**
+     * Schedule a periodic task that saves the state of all currently registered players
+     */
+    private async startPeriodicDatabaseBackup() {
+        // TODO: Put into upcoming event scheduler
+        const persist = () => {
+            Log.info('Persisting game state to database', 'engine')
+
+            for (const player of this.players) {
+                player.save()
+            }
+
+            setTimeout(persist, DB_PERSIST_INTERVAL)
+        }
+
+        // Wait before the first persist
+        setTimeout(persist, DB_PERSIST_INTERVAL)
     }
 
     /**
