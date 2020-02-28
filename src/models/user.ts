@@ -3,10 +3,9 @@ import fetch from 'node-fetch'
 import mongoose, { Document, Schema } from 'mongoose'
 import WebSocket from 'ws'
 
+import { PLAYER_PORT } from '../config'
 import { SystemEvent, IPlayerConnectingEvent } from '../engine/events'
 import { Log } from '../logging'
-
-const PLAYER_PORT = 4242;
 
 /**
  * Mongoose User schema for MongoDB
@@ -309,7 +308,7 @@ export class Player extends EventEmitter {
             const json = await response.json();
             return json;
         } catch (error) {
-            Log.info(`Tried to GET from ${this}${route}, got: ${error.message}`, SystemEvent.PLAYER_QUEST_RESPONSE)
+            Log.debug(`Tried to GET from ${this}${route}, got: ${error.message}`, SystemEvent.PLAYER_QUEST_RESPONSE)
             return null;
         }
     }
@@ -333,7 +332,7 @@ export class Player extends EventEmitter {
             const json = await response.json();
             return json;
         } catch (error) {
-            Log.info(`Tried to POST from ${this}${route}, got: ${error.message}`, SystemEvent.PLAYER_QUEST_RESPONSE)
+            Log.debug(`Tried to POST from ${this}${route}, got: ${error.message}`, SystemEvent.PLAYER_QUEST_RESPONSE)
             return null;
         };
     }
@@ -357,7 +356,7 @@ export class Player extends EventEmitter {
             const json = await response.json();
             return json;
         } catch (error) {
-            Log.info(`Tried to PUT from ${this}${route}, got: ${error.message}`, SystemEvent.PLAYER_QUEST_RESPONSE)
+            Log.debug(`Tried to PUT from ${this}${route}, got: ${error.message}`, SystemEvent.PLAYER_QUEST_RESPONSE)
             return null;
         };
     }
