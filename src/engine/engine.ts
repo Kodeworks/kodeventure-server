@@ -123,7 +123,7 @@ export class GameEngine extends EventEmitter {
      * Stop the game, this will transition into ENDED state, and can be invoked from any other state
      */
     public stop() {
-        if (this.gameState !== GameState.STOPPED) {
+        if (this.gameState === GameState.STOPPED) {
             throw new Error('Cannot stop, game already stopped')
         }
 

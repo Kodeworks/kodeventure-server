@@ -82,6 +82,8 @@ def stop():
 
     if response.status_code == 200:
         print('Game ended!')
+    else:
+        print('ERROR:', response.text)
 
 
 if __name__ == '__main__':
