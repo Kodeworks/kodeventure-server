@@ -92,7 +92,7 @@ export class Scheduler {
 
             Log.debug(`Queued a task to run once with ${params.length} params, as scheduler is paused`, 'scheduler')
         } else {
-            Log.error(`Request to schedule ${task.name} once, but scheduler state is ${this.state}`, 'scheduler')
+            Log.error(`Request to schedule a task once, but scheduler state is ${this.state}`, 'scheduler')
         }
     }
 
