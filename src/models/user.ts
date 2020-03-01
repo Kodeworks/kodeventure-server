@@ -92,7 +92,9 @@ export class Player extends EventEmitter {
     public addScore(xp: number) {
         this.user.score += xp
 
-        this.emit(SystemEvent.PLAYER_SCORE, { player: this })
+        if (xp !== 0) {
+            this.emit(SystemEvent.PLAYER_SCORE, { player: this })
+        }
     }
 
     /**
