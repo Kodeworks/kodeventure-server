@@ -17,8 +17,6 @@ export class Routes {
 
         this.get('/', this.scoreboardController.getIndex)
 
-        // TODO: Remove these or at least remove getUsers and make addNewUser require an
-        // admin Authorization header token we can use in a CLI.
         this.post('/user', this.userController.addNewUser)
         this.get('/users', this.userController.getUsers)
     }

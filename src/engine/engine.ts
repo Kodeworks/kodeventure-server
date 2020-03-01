@@ -1,11 +1,12 @@
 import { EventEmitter } from 'events'
 import { Request, Response } from 'express'
 
+import { GameController } from '../controllers/gameController'
 import { SystemEvent, IPlayerError, IPlayerConnectingEvent } from './events'
 import { Log } from '../logging'
 import { Quest, ExampleQuest } from "../models/quest"
 import { Player } from "../models/user"
-import { Routes } from 'routes'
+import { Routes } from '../routes'
 import { Scheduler } from './scheduler'
 
 const DB_PERSIST_INTERVAL: number = 30000 // ms
@@ -27,10 +28,11 @@ export enum GameState {
  * Responsible for all event dispatching between components, player registry etc.
  */
 export class GameEngine extends EventEmitter {
-    private registeredPlayers: Map<string, Player>
-    private routes: Routes
-    private quests: Map<string, Quest>
     private gameState: GameState
+    private routes: Routes
+    private api: GameController
+    private registeredPlayers: Map<string, Player>
+    private quests: Map<string, Quest>
 
     public scheduler: Scheduler
 
@@ -41,9 +43,10 @@ export class GameEngine extends EventEmitter {
         super()
 
         this.gameState = GameState.STOPPED
+        this.routes = routes
+        this.api = new GameController(this)
         this.quests = new Map()
         this.registeredPlayers = new Map()
-        this.routes = routes
         this.scheduler = new Scheduler()
 
         this.configureGameEvents()
@@ -161,6 +164,7 @@ export class GameEngine extends EventEmitter {
             return Log.error(`Could not register quest ${quest}, already registered!`, 'engine')
         }
 
+        // Main quest route serves decription
         this.routes.get(`/quests/${quest.baseRoute}`, (req: Request, res: Response ) => {
             res.json({ description: quest.description })
         })
@@ -193,7 +197,13 @@ export class GameEngine extends EventEmitter {
      * Set up event listeners for all relevant game events and bridge events to relevant components
      */
     private configureGameEvents() {
-        // Base setup
+        // API / CLI / RPC handling
+        this.routes.post('/game/start', this.api.start.bind(this.api))
+        this.routes.post('/game/pause', this.api.pause.bind(this.api))
+        this.routes.post('/game/unpause', this.api.unpause.bind(this.api))
+        this.routes.post('/game/stop', this.api.stop.bind(this.api))
+
+        // New player handling
         this.on(SystemEvent.PLAYER_CONNECTING, this.handlePlayerConnecting.bind(this))
 
         // Task scheduler

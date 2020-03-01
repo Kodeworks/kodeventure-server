@@ -2,7 +2,6 @@ import { Request, Response } from 'express'
 
 import { authorize } from './auth'
 import { GameEngine } from '../engine/engine'
-import { SystemEvent } from 'engine/events'
 
 
 /**
@@ -31,7 +30,7 @@ export class GameController {
                 res.send()
             } catch (e) {
                 res.status(403)
-                res.send({'status': 401, 'error': e})
+                res.send({'status': 403, 'error': e.message})
             }
         }
     }
@@ -48,7 +47,7 @@ export class GameController {
                 res.send()
             } catch (e) {
                 res.status(403)
-                res.send({'status': 401, 'error': e})
+                res.send({'status': 403, 'error': e.message})
             }
         }
     }
@@ -65,7 +64,7 @@ export class GameController {
                 res.send()
             } catch (e) {
                 res.status(403)
-                res.send({'status': 401, 'error': e})
+                res.send({'status': 403, 'error': e.message})
             }
         }
     }
@@ -82,7 +81,7 @@ export class GameController {
                 res.send()
             } catch (e) {
                 res.status(403)
-                res.send({'status': 401, 'error': e})
+                res.send({'status': 403, 'error': e.message})
             }
         }
     }
