@@ -35,11 +35,13 @@ export default class Kodeventure {
         this.engine = new GameEngine(this.routes)
         this.httpServer = http.createServer(this.webapp)
         this.ws = new WebSocketHandler(this.httpServer, this.engine)
+
+        Log.debug(`Constructed Kodeventure`, "server")
     }
 
     public listen(host: string, port: number) {
         this.httpServer.listen(port, host, () => {
-            Log.info(`Started listening on ${host}:${port}`, "server")
+            Log.info(`Started listening on ${host}:${port} using game engine ${this.engine}`, "server")
         })
     }
 

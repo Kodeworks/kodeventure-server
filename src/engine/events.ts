@@ -9,6 +9,7 @@ export const enum SystemEvent {
     // General game events
     GAME_STARTED = "game_started",
     GAME_PAUSED = "game_paused",
+    GAME_UNPAUSED = "game_unpaused",
     GAME_ENDED = "game_ended",
     GAME_MESSAGE = "game_message",
 

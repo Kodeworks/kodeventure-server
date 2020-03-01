@@ -6,6 +6,7 @@ import { Log } from '../logging'
 import { Quest, ExampleQuest } from "../models/quest"
 import { Player } from "../models/user"
 import { Routes } from 'routes'
+import { Scheduler } from './scheduler'
 
 const DB_PERSIST_INTERVAL: number = 30000 // ms
 
@@ -18,6 +19,8 @@ export class GameEngine extends EventEmitter {
     private routes: Routes
     private quests: Map<string, Quest>
 
+    public scheduler: Scheduler
+
     /**
      * Construct a GameEngine
      */
@@ -27,12 +30,15 @@ export class GameEngine extends EventEmitter {
         this.quests = new Map()
         this.registeredPlayers = new Map()
         this.routes = routes
+        this.scheduler = new Scheduler()
 
         this.configureGameEvents()
         this.startPeriodicDatabaseBackup()
 
         // Register the quests here, TODO: Move to some more fancy mechanism of defining the quest set
         this.registerQuest(new ExampleQuest(this))
+
+        Log.debug(`Constructed ${this}`, 'engine')
     }
     
     /**
@@ -59,12 +65,19 @@ export class GameEngine extends EventEmitter {
     }
 
     /**
+     * Text representation of the state of this GameEngine
+     */
+    public toString() {
+        return `GameEngine[quests: ${this.quests.size}, players: ${this.registeredPlayers.size}]`
+    }
+
+    /**
      * Register a quest to the game engine
      * @param quest A quest inheriting from the Quest base class
      */
     private registerQuest(quest: Quest): void {
         if (this.quests.has(quest.baseRoute)) {
-            return Log.error(`Could not register quest ${quest}, already registered!`, "engine")
+            return Log.error(`Could not register quest ${quest}, already registered!`, 'engine')
         }
 
         this.routes.get(`/quests/${quest.baseRoute}`, (req: Request, res: Response ) => {
@@ -92,7 +105,7 @@ export class GameEngine extends EventEmitter {
 
         this.quests.set(quest.baseRoute, quest)
 
-        Log.info(`Registered quest ${quest}`, "engine")
+        Log.debug(`Registered quest ${quest}`, 'engine')
     }
 
     /**
@@ -101,6 +114,11 @@ export class GameEngine extends EventEmitter {
     private configureGameEvents() {
         // Base setup
         this.on(SystemEvent.PLAYER_CONNECTING, this.handlePlayerConnecting.bind(this))
+
+        // Task scheduler
+        this.on(SystemEvent.GAME_PAUSED, data => this.scheduler.emit(SystemEvent.GAME_PAUSED, data))
+        this.on(SystemEvent.GAME_UNPAUSED, data => this.scheduler.emit(SystemEvent.GAME_UNPAUSED, data))
+        this.on(SystemEvent.GAME_ENDED, data => this.scheduler.emit(SystemEvent.GAME_ENDED, data))
     }
 
     /**
