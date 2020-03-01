@@ -94,7 +94,7 @@ if __name__ == '__main__':
         'listusers': listusers,
         'start': start,
         'pause': pause,
-        'unpause': unpause
+        'unpause': unpause,
         'stop': stop,
     }
 
