@@ -1,6 +1,6 @@
-# Kodeventure Quests
+# Kodeventure Server
 
-Quest repository for the Kodeventure programming RPG
+Server application for the Kodeventure programming RPG
 
 # Setup
 
