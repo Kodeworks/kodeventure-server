@@ -1,5 +1,6 @@
 import { Application, Request, Response } from 'express'
 
+import { CertController } from './controllers/certController'
 import { UserController } from './controllers/userController'
 import { ScoreboardController } from './controllers/scoreboardController'
 import { Log } from './logging'
@@ -8,6 +9,7 @@ export class Routes {
     private app: Application
     private routes: Set<string>
 
+    public certController: CertController = new CertController()
     public scoreboardController: ScoreboardController = new ScoreboardController()
     public userController: UserController = new UserController()
 
@@ -15,10 +17,15 @@ export class Routes {
         this.app = app
         this.routes = new Set()
 
+        // Serve scoreboard on main page
         this.get('/', this.scoreboardController.getIndex)
 
+        // Admin endpoints
         this.post('/user', this.userController.addNewUser)
         this.get('/users', this.userController.getUsers)
+
+        // Certificate creation endpoint
+        this.post('/cert', this.certController.createPlayerCert.bind(this.certController))
     }
 
     /**

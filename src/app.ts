@@ -1,6 +1,8 @@
 import bodyParser from 'body-parser'
 import express from 'express'
+import fs from 'fs'
 import http from 'http'
+import https from 'https'
 import mongoose from 'mongoose'
 import path from 'path'
 
@@ -30,19 +32,36 @@ export default class Kodeventure {
         this.config()
         this.mongoSetup()
 
+        // Load self signed certificate
+        const cert = this.loadCertificate()
+
         // Game configuration, web server and websockets
         this.routes = new Routes(this.webapp)
         this.engine = new GameEngine(this.routes)
-        this.httpServer = http.createServer(this.webapp)
+        this.httpServer = https.createServer(cert, this.webapp)
         this.ws = new WebSocketHandler(this.httpServer, this.engine)
 
-        Log.debug(`Constructed Kodeventure`, "server")
+        Log.debug(`Constructed Kodeventure`, 'server')
     }
 
+    /**
+     * Start the application web server
+     * @param host The hostname to bind to
+     * @param port The port to bind to
+     */
     public listen(host: string, port: number) {
         this.httpServer.listen(port, host, () => {
-            Log.info(`Started listening on ${host}:${port} using game engine ${this.engine}`, "server")
+            Log.info(`Started listening on ${host}:${port} using game engine ${this.engine}`, 'server')
         })
+    }
+
+    private loadCertificate(): { cert: string, key: string } {
+        Log.info(`Loading SSL certificate from server.key and server.crt`, 'server')
+
+        const privateKey  = fs.readFileSync('server.key', 'utf8');
+        const certificate = fs.readFileSync('server.crt', 'utf8');
+
+        return { key: privateKey, cert: certificate }
     }
 
     /**

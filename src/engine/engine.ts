@@ -252,19 +252,16 @@ export class GameEngine extends EventEmitter {
      * Schedule a periodic task that saves the state of all currently registered players
      */
     private async startPeriodicDatabaseBackup() {
-        // TODO: Put into upcoming event scheduler
         const persist = () => {
-            Log.info('Persisting game state to database', 'engine')
+            Log.debug('Persisting game state to database', 'engine')
 
             for (const player of this.players) {
                 player.save()
             }
-
-            setTimeout(persist, DB_PERSIST_INTERVAL)
         }
 
-        // Wait before the first persist
-        setTimeout(persist, DB_PERSIST_INTERVAL)
+        // Persist to database at a predefined interval
+        this.scheduler.schedulePeriodic(persist, DB_PERSIST_INTERVAL)
     }
 
     /**
