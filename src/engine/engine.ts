@@ -136,7 +136,7 @@ export class GameEngine extends EventEmitter {
         this.gameState = GameState.ENDED
 
         this.emit(SystemEvent.GAME_ENDED, {
-            msg: ''
+            msg: 'It seems we have run out of battery. Hope you had fun playing Kodeventure! We would love some feedback.'
         })
 
         Log.info(`Stopped ${this}`, 'engine')
