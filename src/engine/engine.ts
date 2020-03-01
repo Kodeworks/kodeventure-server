@@ -10,6 +10,18 @@ import { Scheduler } from './scheduler'
 
 const DB_PERSIST_INTERVAL: number = 30000 // ms
 
+
+/**
+ * The different states the game engine can be in
+ */
+export enum GameState {
+    STOPPED = "STOPPED",
+    RUNNING = "RUNNING",
+    PAUSED = "PAUSED",
+    ENDED = "ENDED"
+}
+
+
 /**
  * Kodeventure Game Engine
  * Responsible for all event dispatching between components, player registry etc.
@@ -18,6 +30,7 @@ export class GameEngine extends EventEmitter {
     private registeredPlayers: Map<string, Player>
     private routes: Routes
     private quests: Map<string, Quest>
+    private gameState: GameState
 
     public scheduler: Scheduler
 
@@ -27,6 +40,7 @@ export class GameEngine extends EventEmitter {
     constructor(routes: Routes) {
         super()
 
+        this.gameState = GameState.STOPPED
         this.quests = new Map()
         this.registeredPlayers = new Map()
         this.routes = routes
@@ -39,13 +53,6 @@ export class GameEngine extends EventEmitter {
         this.registerQuest(new ExampleQuest(this))
 
         Log.debug(`Constructed ${this}`, 'engine')
-    }
-    
-    /**
-     * Get an array of all registered players
-     */
-    public get players(): Player[] {
-        return Array.from(this.registeredPlayers.values())
     }
 
     /**
@@ -65,10 +72,84 @@ export class GameEngine extends EventEmitter {
     }
 
     /**
+     * Start the game, this can only be done from a STOPPED state
+     */
+    public start() {
+        if (this.gameState !== GameState.STOPPED) {
+            throw new Error('Cannot start, game already started!')
+        }
+
+        this.gameState = GameState.RUNNING
+
+        this.emit(SystemEvent.GAME_STARTED)
+
+        Log.info(`Started ${this}`, 'engine')
+    }
+
+    /**
+     * Pause the game, this can only be done from a RUNNING state
+     */
+    public pause() {
+        if (this.gameState !== GameState.RUNNING) {
+            throw new Error('Cannot pause, game not running!')
+        }
+
+        this.gameState = GameState.PAUSED
+
+        this.emit(SystemEvent.GAME_PAUSED)
+
+        Log.info(`Paused ${this}`, 'engine')
+    }
+
+    /**
+     * Unpause the game, this can only be done from a PAUSED state
+     */
+    public unpause() {
+        if (this.gameState !== GameState.PAUSED) {
+            throw new Error('Cannot unpause, game not paused!')
+        }
+
+        this.gameState = GameState.RUNNING
+
+        this.emit(SystemEvent.GAME_UNPAUSED)
+
+        Log.info(`Unpaused ${this}`, 'engine')
+    }
+
+    /**
+     * Stop the game, this will transition into ENDED state, and can be invoked from any other state
+     */
+    public stop() {
+        if (this.gameState !== GameState.STOPPED) {
+            throw new Error('Cannot stop, game already stopped')
+        }
+
+        this.gameState = GameState.ENDED
+
+        this.emit(SystemEvent.GAME_ENDED)
+
+        Log.info(`Stopped ${this}`, 'engine')
+    }
+
+    /**
      * Text representation of the state of this GameEngine
      */
     public toString() {
         return `GameEngine[quests: ${this.quests.size}, players: ${this.registeredPlayers.size}]`
+    }
+
+    /**
+     * Get an array of all registered players
+     */
+    public get players(): Player[] {
+        return Array.from(this.registeredPlayers.values())
+    }
+
+    /**
+     * Get the current state of the game engine
+     */
+    public get state(): GameState {
+        return this.gameState
     }
 
     /**

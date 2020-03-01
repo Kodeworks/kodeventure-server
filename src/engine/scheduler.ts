@@ -85,14 +85,14 @@ export class Scheduler extends EventEmitter {
         if (this.state === SchedulerState.RUNNING) {
             setImmediate(task, ...params)
 
-            Log.debug(`Scheduled ${task} to run once with params ${params}`, 'scheduler')
+            Log.debug(`Scheduled ${task.name} to run once`, 'scheduler')
         } else if (this.state === SchedulerState.PAUSED) {
             // We ignore the task ID, since it's not relevant for scheduleOnce
             this.registerTask(TaskType.IMMEDIATE, task, params)
 
-            Log.debug(`Queued ${task} to run once with params ${params} as scheduler is paused`, 'scheduler')
+            Log.debug(`Queued ${task.name} to run once with ${params.length} params, as scheduler is paused`, 'scheduler')
         } else {
-            Log.error(`Request to schedule ${task} once, but scheduler state is ${this.state}`, 'scheduler')
+            Log.error(`Request to schedule ${task.name} once, but scheduler state is ${this.state}`, 'scheduler')
         }
     }
 
@@ -110,14 +110,14 @@ export class Scheduler extends EventEmitter {
             if (this.state === SchedulerState.RUNNING) {
                 this.taskTimers.set(taskId, setInterval(task, interval, ...params))
             } else {
-                Log.debug(`Queued ${task} to run every ${interval} ms with params ${params} as scheduler is paused`, 'scheduler')
+                Log.debug(`Queued ${task.name} to run every ${interval} ms with ${params.length} params, as scheduler is paused`, 'scheduler')
             }
 
-            Log.debug(`Scheduled ${task} to run every ${interval} ms with params ${params}`, 'scheduler')
+            Log.debug(`Scheduled ${task.name} to run every ${interval} ms with ${params.length} params`, 'scheduler')
 
             return taskId
         } else {
-            Log.error(`Request to schedule ${task} every ${interval} ms, but scheduler state is ${this.state}`, 'scheduler')
+            Log.error(`Request to schedule ${task.name} every ${interval} ms, but scheduler state is ${this.state}`, 'scheduler')
 
             return -1
         }
