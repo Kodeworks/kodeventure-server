@@ -11,7 +11,8 @@
   },
   "keywords": [],
   "author": "Kodeworks",
-  "license": "BSD-3",
+  "license": "BSD-3-Clause",
+  "repository": "https://github.com/Kodeworks/kodeventure-server",
   "type": "module",
   "dependencies": {
     "body-parser": "^1.19.0",
@@ -19,6 +20,7 @@
     "express": "^4.17.1",
     "mongoose": "^5.9.2",
     "node-fetch": "^2.6.0",
+    "selfsigned": "^1.10.7",
     "ws": "^7.2.1"
   },
   "devDependencies": {
