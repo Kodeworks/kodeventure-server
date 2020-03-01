@@ -6,6 +6,10 @@ import string
 
 SERVER = 'http://localhost:3001'
 TOKEN = 'dungeon-master-key'
+HEADERS = {
+    'Authorization': TOKEN,
+    'Content-Type': 'application/json'
+}
 
 
 def adduser():
@@ -21,12 +25,8 @@ def adduser():
         "titles": [],
         "loot": []
     }
-    headers = {
-        'Content-Type': 'application/json',
-        'Authorization': TOKEN
-    }
 
-    response = requests.post(f'{SERVER}/user', headers=headers, json=payload)
+    response = requests.post(f'{SERVER}/user', headers=HEADERS, json=payload)
 
     if response.status_code == 200:
         data = response.json()
@@ -39,11 +39,7 @@ def adduser():
         print('ERROR:', response.text)
 
 def listusers():
-    headers = {
-        'Authorization': TOKEN
-    }
-
-    response = requests.get(f'{SERVER}/users', headers=headers)
+    response = requests.get(f'{SERVER}/users', headers=HEADERS)
 
     if response.status_code == 200:
         data = response.json()
@@ -55,28 +51,37 @@ def listusers():
 
 
 def start():
-    pass
+    response = requests.post(f'{SERVER}/game/start', headers=HEADERS)
+
+    if response.status_code == 200:
+        print('Game started!')
+    else:
+        print('ERROR:', response.text)
 
 
 def pause():
-    pass
+    response = requests.post(f'{SERVER}/game/pause', headers=HEADERS)
+
+    if response.status_code == 200:
+        print('Game paused!')
+    else:
+        print('ERROR:', response.text)
 
 
 def unpause():
-    pass
+    response = requests.post(f'{SERVER}/game/pause', headers=HEADERS)
+
+    if response.status_code == 200:
+        print('Game unpaused!')
+    else:
+        print('ERROR:', response.text)
 
 
 def stop():
-    pass
+    response = requests.post(f'{SERVER}/game/stop', headers=HEADERS)
 
-
-def cli(cmd):
-    if cmd == 'adduser':
-        adduser()
-    elif cmd == 'listusers':
-        listusers()
-    else:
-        pass
+    if response.status_code == 200:
+        print('Game ended!')
 
 
 if __name__ == '__main__':
@@ -84,13 +89,21 @@ if __name__ == '__main__':
         description='Kodeventure Server CLI'
     )
 
+    cmds = {
+        'adduser': adduser,
+        'listusers': listusers,
+        'start': start,
+        'pause': pause,
+        'stop': stop,
+    }
+
     parser.add_argument(
         'cmd',
-        choices=['adduser', 'listusers', 'start', 'pause', 'unpause', 'stop'],
+        choices=cmds,
         help='Which command to run'
     )
 
     args = parser.parse_args()
 
-    cli(args.cmd)
+    cmds[args.cmd]()
 
