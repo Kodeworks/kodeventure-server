@@ -25,7 +25,7 @@ function Scoreboard() {
 
   React.useEffect(() => {
     // Setup WS connection
-    const ws = new WebSocket('ws://localhost:3001/scoreboard/ws')
+    const ws = new WebSocket('wss://localhost:3001/scoreboard/ws')
     ws.onopen = handleConnected
     ws.onmessage = receiveMessage
 
