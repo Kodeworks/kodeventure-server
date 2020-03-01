@@ -69,7 +69,7 @@ def pause():
 
 
 def unpause():
-    response = requests.post(f'{SERVER}/game/pause', headers=HEADERS)
+    response = requests.post(f'{SERVER}/game/unpause', headers=HEADERS)
 
     if response.status_code == 200:
         print('Game unpaused!')
