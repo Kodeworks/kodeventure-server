@@ -18,8 +18,11 @@ or use similar package manager on your host system
 
 ```
 cd src
+npm i -g typescript ts-node ts-node-dev
 npm i
 ```
+
+Might need sudo for `npm i -g ...` on Linux
 
 # Run
 
