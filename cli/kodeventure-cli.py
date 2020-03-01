@@ -1,5 +1,6 @@
 import argparse
 import json
+import os
 import random
 import requests
 import string
@@ -62,13 +63,16 @@ def cert():
         public_key = data['public']
         certificate = data['cert']
 
-        with open('../server.key', 'w', encoding='utf-8') as f:
+        def parent_dir(filename):
+            return os.path.join(os.path.dirname(__file__), '..', filename)
+
+        with open(parent_dir('server.key'), 'w', encoding='utf-8') as f:
             f.write(private_key)
             print('Wrote server.key')
-        with open('../server.pub', 'w', encoding='utf-8') as f:
+        with open(parent_dir('server.pub'), 'w', encoding='utf-8') as f:
             f.write(public_key)
             print('Wrote server.pub')
-        with open('../server.crt', 'w', encoding='utf-8') as f:
+        with open(parent_dir('server.crt'), 'w', encoding='utf-8') as f:
             f.write(certificate)
             print('Wrote server.crt')
     else:

@@ -55,11 +55,17 @@ export default class Kodeventure {
         })
     }
 
+    /**
+     * Reads server.key and server.crt from disk and returns the content as a simple object
+     */
     private loadCertificate(): { cert: string, key: string } {
         Log.info(`Loading SSL certificate from server.key and server.crt`, 'server')
 
-        const privateKey  = fs.readFileSync('server.key', 'utf8');
-        const certificate = fs.readFileSync('server.crt', 'utf8');
+        const privateKeyPath = path.resolve(__dirname, '..', 'server.key')
+        const certificatePath = path.resolve(__dirname, '..', 'server.crt')
+
+        const privateKey  = fs.readFileSync(privateKeyPath, 'utf8');
+        const certificate = fs.readFileSync(certificatePath, 'utf8');
 
         return { key: privateKey, cert: certificate }
     }
