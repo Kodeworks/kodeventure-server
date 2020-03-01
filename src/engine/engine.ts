@@ -47,7 +47,7 @@ export class GameEngine extends EventEmitter {
         this.api = new GameController(this)
         this.quests = new Map()
         this.registeredPlayers = new Map()
-        this.scheduler = new Scheduler()
+        this.scheduler = new Scheduler(this)
 
         this.configureGameEvents()
         this.startPeriodicDatabaseBackup()
@@ -84,7 +84,9 @@ export class GameEngine extends EventEmitter {
 
         this.gameState = GameState.RUNNING
 
-        this.emit(SystemEvent.GAME_STARTED)
+        this.emit(SystemEvent.GAME_STARTED, {
+            msg: 'You feel a tingling sensation in your circuitry... Ask /quest/questmaster for some advice!'
+        })
 
         Log.info(`Started ${this}`, 'engine')
     }
@@ -99,7 +101,9 @@ export class GameEngine extends EventEmitter {
 
         this.gameState = GameState.PAUSED
 
-        this.emit(SystemEvent.GAME_PAUSED)
+        this.emit(SystemEvent.GAME_PAUSED, {
+            msg: 'Oh noes, 4chan is raiding our server. Have some food and drink while we call Pepe to sort things out!'
+        })
 
         Log.info(`Paused ${this}`, 'engine')
     }
@@ -114,7 +118,9 @@ export class GameEngine extends EventEmitter {
 
         this.gameState = GameState.RUNNING
 
-        this.emit(SystemEvent.GAME_UNPAUSED)
+        this.emit(SystemEvent.GAME_UNPAUSED, {
+            msg: 'Never gonna give you up! Never gonna let you down! Uhm, I mean, we are live again! Good luck!'
+        })
 
         Log.info(`Unpaused ${this}`, 'engine')
     }
@@ -129,7 +135,9 @@ export class GameEngine extends EventEmitter {
 
         this.gameState = GameState.ENDED
 
-        this.emit(SystemEvent.GAME_ENDED)
+        this.emit(SystemEvent.GAME_ENDED, {
+            msg: ''
+        })
 
         Log.info(`Stopped ${this}`, 'engine')
     }
@@ -205,11 +213,6 @@ export class GameEngine extends EventEmitter {
 
         // New player handling
         this.on(SystemEvent.PLAYER_CONNECTING, this.handlePlayerConnecting.bind(this))
-
-        // Task scheduler
-        this.on(SystemEvent.GAME_PAUSED, data => this.scheduler.emit(SystemEvent.GAME_PAUSED, data))
-        this.on(SystemEvent.GAME_UNPAUSED, data => this.scheduler.emit(SystemEvent.GAME_UNPAUSED, data))
-        this.on(SystemEvent.GAME_ENDED, data => this.scheduler.emit(SystemEvent.GAME_ENDED, data))
     }
 
     /**
@@ -223,7 +226,10 @@ export class GameEngine extends EventEmitter {
         Log.info(`${player}`, SystemEvent.PLAYER_CONNECTED)
 
         // Send a game_message event to the player over the websocket connection
-        player.notify(`Welcome ${player.name}! Great adventures lay before you, across the bit fields of doom...`)
+        player.notify(`Welcome ${player.name}! Great adventures await in the bitfields of doom...`)
+        if (this.gameState === GameState.STOPPED) {
+            player.notify(`The game has not yet started, be patient while we download more RAM`)
+        }
 
         this.emit(SystemEvent.PLAYER_CONNECTED, { player: player })
 

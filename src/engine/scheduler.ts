@@ -52,8 +52,9 @@ interface ITask {
 /**
  * The Kodeventure task scheduling engine
  */
-export class Scheduler extends EventEmitter {
+export class Scheduler {
     private state: SchedulerState
+    private engine: EventEmitter
     private tasks: Map<number, ITask>
     private taskTimers: Map<number, NodeJS.Timeout>
     private taskCounter: number
@@ -61,17 +62,16 @@ export class Scheduler extends EventEmitter {
     /**
      * Construct a task scheduler
      */
-    constructor() {
-        super()
-
+    constructor(engine: EventEmitter) {
         this.state = SchedulerState.RUNNING
+        this.engine = engine
         this.tasks = new Map()
         this.taskTimers = new Map()
         this.taskCounter = 0
 
-        this.on(SystemEvent.GAME_PAUSED, this.handleGamePaused.bind(this))
-        this.on(SystemEvent.GAME_UNPAUSED, this.handleGameUnpaused.bind(this))
-        this.on(SystemEvent.GAME_ENDED, this.handleGameEnded.bind(this))
+        this.engine.on(SystemEvent.GAME_PAUSED, this.handleGamePaused.bind(this))
+        this.engine.on(SystemEvent.GAME_UNPAUSED, this.handleGameUnpaused.bind(this))
+        this.engine.on(SystemEvent.GAME_ENDED, this.handleGameEnded.bind(this))
 
         Log.debug(`Constructed ${this}`, 'scheduler')
     }
