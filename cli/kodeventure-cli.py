@@ -3,8 +3,10 @@ import json
 import random
 import requests
 import string
+import urllib3
 
-SERVER = 'http://localhost:3001'
+
+SERVER = 'https://localhost:3001'
 TOKEN = 'dungeon-master-key'
 HEADERS = {
     'Authorization': TOKEN,
@@ -26,7 +28,7 @@ def adduser():
         "loot": []
     }
 
-    response = requests.post(f'{SERVER}/user', headers=HEADERS, json=payload)
+    response = requests.post(f'{SERVER}/user', headers=HEADERS, json=payload, verify=False)
 
     if response.status_code == 200:
         data = response.json()
@@ -39,7 +41,7 @@ def adduser():
         print('ERROR:', response.text)
 
 def listusers():
-    response = requests.get(f'{SERVER}/users', headers=HEADERS)
+    response = requests.get(f'{SERVER}/users', headers=HEADERS, verify=False)
 
     if response.status_code == 200:
         data = response.json()
@@ -51,7 +53,7 @@ def listusers():
 
 
 def cert():
-    response = requests.post(f'{SERVER}/cert')
+    response = requests.post(f'{SERVER}/cert', verify=False)
 
     if response.status_code == 200:
         data = response.json()
@@ -74,7 +76,7 @@ def cert():
 
 
 def start():
-    response = requests.post(f'{SERVER}/game/start', headers=HEADERS)
+    response = requests.post(f'{SERVER}/game/start', headers=HEADERS, verify=False)
 
     if response.status_code == 200:
         print('Game started!')
@@ -83,7 +85,7 @@ def start():
 
 
 def pause():
-    response = requests.post(f'{SERVER}/game/pause', headers=HEADERS)
+    response = requests.post(f'{SERVER}/game/pause', headers=HEADERS, verify=False)
 
     if response.status_code == 200:
         print('Game paused!')
@@ -92,7 +94,7 @@ def pause():
 
 
 def unpause():
-    response = requests.post(f'{SERVER}/game/unpause', headers=HEADERS)
+    response = requests.post(f'{SERVER}/game/unpause', headers=HEADERS, verify=False)
 
     if response.status_code == 200:
         print('Game unpaused!')
@@ -101,7 +103,7 @@ def unpause():
 
 
 def stop():
-    response = requests.post(f'{SERVER}/game/stop', headers=HEADERS)
+    response = requests.post(f'{SERVER}/game/stop', headers=HEADERS, verify=False)
 
     if response.status_code == 200:
         print('Game ended!')
@@ -131,6 +133,8 @@ if __name__ == '__main__':
     )
 
     args = parser.parse_args()
+
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     cmds[args.cmd]()
 
