@@ -25,13 +25,13 @@ function Scoreboard() {
 
   React.useEffect(() => {
     // Setup WS connection
-    const ws = new WebSocket('wss://localhost:3001/scoreboard/ws')
+    const ws = new WebSocket(`wss://${location.host}/scoreboard/ws`)
     ws.onopen = handleConnected
     ws.onmessage = receiveMessage
 
     // TODO: Setup testdata - to be removed
-    setPlayers(_players)
-    setKillFeed(_killfeed)
+    // setPlayers(_players)
+    // setKillFeed(_killfeed)
   }, [])
 
 
