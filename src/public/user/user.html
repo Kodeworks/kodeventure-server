@@ -25,7 +25,7 @@
       <div class="user-registration-form">
         <h2>Enter your desired player name</h2>
         <input placeholder="Player name" class="user-registration--input" type="text" id="playerName">
-        <button id="register-button" class="btn btn-primary" type="button">Register new user</button>
+        <button id="register-button" class="btn btn-primary" type="button">Register new player</button>
       </div>
 
       <div class="user-registration--username-error">
@@ -41,7 +41,7 @@
 
         <div class="user-registration-data--controllers">
           <button id="user-delete" class="btn btn-danger" type="button">Reset user data</button>
-          <span class="user-registration-data--deleteInfo">Deleting this data won't remove you from the Database. It only alows you to register a new user.</span>
+          <span class="user-registration-data--deleteInfo">Deleting this data won't remove you from the Database. It only allows you to register a new user.</span>
         </div>
       </div>
     </main>
@@ -52,7 +52,6 @@
       const registerButton = document.getElementById('register-button')
       const userDeleteButton = document.getElementById('user-delete')
 
-
       function disableUI() {
         playerName.setAttribute('disabled', 'disabled')
         registerButton.setAttribute('disabled', 'disabled')
@@ -61,8 +60,6 @@
       function enableUI() {
         playerName.removeAttribute('disabled')
         registerButton.removeAttribute('disabled')
-
-
       }
 
       function getUUID() {
