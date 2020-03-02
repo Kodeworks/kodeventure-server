@@ -90,6 +90,11 @@ export class UserController {
         }
     }
 
+    /**
+     * Delete user by ID.
+     * @param req Express.js request object
+     * @param res Express.js response object
+     */
     public deleteUser(req: Request, res: Response) {
         if (authorize(req, res)) {
             const playerId = req.params.id
