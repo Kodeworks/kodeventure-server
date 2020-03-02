@@ -33,17 +33,16 @@ export class UserController {
      * @param res Express.js response object
      */
     public addNewUser(req: Request, res: Response) {
-        if (authorize(req, res)) {
-            let newUser = new UserDatabaseModel(req.body)
+        const user = { ...req.body, score: 0, titles: [], loot: [] }
+        let newUser = new UserDatabaseModel(user)
 
-            newUser.save((error, user) => {
-                if (error) {
-                    res.send(error)
-                }
+        newUser.save((error, user) => {
+            if (error) {
+                res.send(error)
+            }
 
-                res.json(user)
-            })
-        }
+            res.json(user)
+        })
     }
 
     /**
