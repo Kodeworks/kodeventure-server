@@ -2,6 +2,8 @@ import { Request, Response } from 'express'
 
 import { authorize } from './auth'
 import { UserDatabaseModel } from '../models/user'
+import { Log } from '../logging'
+import { SystemEvent } from '../engine/events'
 
 
 /**
@@ -64,6 +66,17 @@ export class UserController {
         if (authorize(req, res)) {
             const name = req.params.name
             UserDatabaseModel.updateOne({ name: name }, { $set: { titles: [], loot: [], score: 0 } })
+        }
+    }
+
+    /**
+     * Delete all users.
+     * @param req Express.js request object
+     * @param res Express.js response object
+     */
+    public deleteAllUsers(req: Request, res: Response) {
+        if (authorize(req, res)) {
+            UserDatabaseModel.deleteMany({}, error => Log.error(`Error deleting users: ${error}`, SystemEvent.DB_DELETE_ERROR))
         }
     }
 
