@@ -1,0 +1,50 @@
+.mainHeader-container {
+  width: 800px;
+}
+#user {
+  position: relative;
+  background-color: #efefef;
+  width: 800px;
+  margin: 0 auto;
+
+  border-radius: 10px;
+  padding: 25px;
+  box-sizing: border-box;
+}
+
+.user-registration-form {
+  width: 450px;
+}
+
+.user-registration-data {
+  display: none;
+  margin-top: 25px;
+}
+
+.user-registration-data--field {
+  width: 120px;
+  font-weight: bold;
+  display: inline-block;
+}
+
+.user-registration-data--controllers {
+  margin-top: 25px;
+}
+
+.user-registration-data--deleteInfo {
+  font-size: 12px;
+  color: rgb(209, 138, 138);
+  display: block;
+}
+
+.user-registration--username-error {
+  color: rgb(209, 138, 138);
+  display: none;
+}
+
+
+.user-registration--input {
+  padding: 8px 10px;
+  width: 200px;
+}
+

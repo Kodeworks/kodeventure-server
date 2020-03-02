@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Kodeventure Scoreboard</title>
+
+        <link rel="stylesheet" type="text/css" href="/css/reset.css">
+        <link rel="stylesheet" type="text/css" href="/css/main.css">
+        <link rel="stylesheet" type="text/css" href="/user/user.css">
+
+        <script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
+        <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
+    </head>
+    <body>
+      <header class="mainHeader">
+        <div class="mainHeader-container">
+            <div class="logo">
+                <img src="https://kodeworks.no/assets/logos/kodeworks.svg" alt="Kodeworks logo">
+            </div>
+            <h1>Kodeventure User Registration</h1>
+        </div>
+    </header>
+
+    <main id="user">
+      <div class="user-registration-form">
+        <h2>Enter your desired player name</h2>
+        <input placeholder="Player name" class="user-registration--input" type="text" id="playerName">
+        <button id="register-button" class="btn btn-primary" type="button">Register new user</button>
+      </div>
+
+      <div class="user-registration--username-error">
+        <p>Player name is taken. Please pick something else.</p>
+      </div>
+
+      <div class="user-registration-data">
+        <ul>
+          <li><span class="user-registration-data--field">Name:</span> <span id="user-name"></span></li>
+          <li><span class="user-registration-data--field">Player token:</span> <span id="user-token"></span></li>
+          <li><span class="user-registration-data--field">Server token:</span> <span id="user-server-token"></span></li>
+        </ul>
+
+        <div class="user-registration-data--controllers">
+          <button id="user-delete" class="btn btn-danger" type="button">Reset user data</button>
+          <span class="user-registration-data--deleteInfo">Deleting this data won't remove you from the Database. It only alows you to register a new user.</span>
+        </div>
+      </div>
+    </main>
+
+
+    <script>
+      const playerName = document.getElementById('playerName')
+      const registerButton = document.getElementById('register-button')
+      const userDeleteButton = document.getElementById('user-delete')
+
+
+      function disableUI() {
+        playerName.setAttribute('disabled', 'disabled')
+        registerButton.setAttribute('disabled', 'disabled')
+      }
+
+      function enableUI() {
+        playerName.removeAttribute('disabled')
+        registerButton.removeAttribute('disabled')
+
+
+      }
+
+      function getUUID() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+          var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8)
+          return v.toString(16)
+        })
+      }
+
+      function renderUserData() {
+        const kodeventureUser = localStorage.getItem('kodeventure_user')
+
+        if (kodeventureUser) {
+          disableUI()
+          const player = JSON.parse(kodeventureUser)
+
+          document.querySelector('.user-registration-data').setAttribute('style', 'display: block;')
+
+          const userName = document.getElementById('user-name')
+          const userToken = document.getElementById('user-token')
+          const userServerToken = document.getElementById('user-server-token')
+
+
+          userName.innerText = player.name
+          userToken.innerText = player.token
+          userServerToken.innerText = player.server_token
+
+        }
+      }
+
+      function resetUserData() {
+        const kodeventureUser = localStorage.getItem('kodeventure_user')
+
+        if (kodeventureUser) {
+          if (confirm('U sure u wanna delete your user data?')) {
+            localStorage.removeItem('kodeventure_user')
+            playerName.value = ''
+            location.reload()
+          }
+        }
+      }
+
+      registerButton.addEventListener('click', function (event) {
+        const playerToken = getUUID()
+        const serverToken = getUUID()
+
+        const user = {
+          name: playerName.value,
+          token: playerToken,
+          server_token: serverToken
+        }
+
+        fetch('/user', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(user)
+        }).then(res => res.json()).then(data => {
+          if (data.errmsg) {
+            document.querySelector('.user-registration--username-error').setAttribute('style', 'display: block;')
+            return
+          }
+
+          document.querySelector('.user-registration--username-error').removeAttribute('style')
+          localStorage.setItem('kodeventure_user', JSON.stringify(data))
+          renderUserData()
+        })
+      })
+
+      userDeleteButton.addEventListener('click', function (event) {
+        resetUserData()
+      })
+
+      renderUserData()
+    </script>
+    </body>
+</html>
