@@ -80,22 +80,22 @@ export class Experience {
 
     public gain(): number {
         this.iterations++
+        this.successCount++
 
         if (this.maxSuccess <= 0) return 0
 
         this.maxSuccess--
-        this.successCount++
 
         return this.successXp
     }
 
     public lose(): number {
         this.iterations++
+        this.failCount++
 
         if (this.maxFail <= 0) return 0
 
         this.maxFail--
-        this.failCount++
 
         return this.failXp
     }
