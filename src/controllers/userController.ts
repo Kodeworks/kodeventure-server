@@ -43,4 +43,16 @@ export class UserController {
             })
         }
     }
+
+    /**
+     * Reset all players stats.
+     * @param req Express.js request object
+     * @param res Express.js response object
+     */
+    public resetAllStats(req: Request, res: Response) {
+        if (authorize(req, res)) {
+            UserDatabaseModel.updateMany({}, { $set: { titles: [], loot: [], score: 0 } })
+        }
+    }
+
 }
