@@ -65,6 +65,8 @@ h2 {
   font-size: 16px;
 }
 
+
+
 /* Kill Feed
 -----------------------------------------------------------------------------*/
 .kill-feed {
@@ -84,8 +86,26 @@ h2 {
 }
 
 .kill-feed li {
-  margin-bottom: 2px;
+  margin-bottom: 5px;
 }
+
+
+/* Message types
+-----------------------------------------------------------------------------*/
+.message-type--gameStarted,
+.message-type--gameUnpaused,
+.message-type--scoreboardConnected {
+  color: #1ec202;
+}
+
+.message-type--gamePaused {
+  color: #ffac30;
+}
+
+.message-type--gameEnded {
+  color: #ff1612;
+}
+
 
 
 
@@ -130,6 +150,11 @@ h2 {
 }
 
 
+.playerCount {
+  padding: 15px;
+  font-weight: bold;
+}
+
 
 /**/
 @media (max-width: 1280px) {
@@ -147,3 +172,4 @@ h2 {
     width: 100%;
   }
 }
+
