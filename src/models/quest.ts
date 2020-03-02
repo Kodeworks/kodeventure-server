@@ -185,6 +185,18 @@ export abstract class Quest extends EventEmitter {
     protected abstract async handleNewPlayer(player: Player): Promise<void>
 
     /**
+     * Complete this quest for the provided player.
+     * @param player A Player object.
+     */
+    protected completeForPlayer(player: Player) {
+        player.removeActiveQuest(this.baseRoute)
+
+        const [ success, fail, total ] = this.xp.get(player).stats
+
+        player.notify(`Quest "${this.baseRoute}" complete. You scored ${success} correct, ${fail} incorrect out of ${total} challenges`)
+    }
+
+    /**
      * Validates an incoming HTTP request, by checking that there is a Player associated with the token
      * and that the Player has access to this quest. Returns the Player object if everything is OK, null otherwise.
      * @param req Express.js request object
@@ -204,10 +216,12 @@ export abstract class Quest extends EventEmitter {
         this.on(SystemEvent.PLAYER_QUEST_UNLOCKED, (data: IPlayerQuestUnlockedEvent) => {
             // Shouldn't happen
             if (data.quest !== this) {
-                return Log.error(`${this} received player unlocked event for anoter quest: ${data.quest}`, SystemEvent.PLAYER_QUEST_UNLOCKED)
+                return Log.error(`${this} received player unlocked event for another quest: ${data.quest}`, SystemEvent.PLAYER_QUEST_UNLOCKED)
             }
 
             this.players.set(data.player.userToken, data.player)
+
+            data.player.addActiveQuest(this.baseRoute)
 
             // Create and set up an XP container for this player, so the quest can keep track of its state
             const xpContainer = new Experience(

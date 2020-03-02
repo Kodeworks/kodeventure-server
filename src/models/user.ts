@@ -150,12 +150,46 @@ export class Player extends EventEmitter {
         const i = this.loot.indexOf(loot)
 
         if (i < 0) {
-            throw new Error(`${this} has no item called "${loot}"`)
+            return Log.error(`${this} has no item called "${loot}"`)
         }
 
         this.loot.splice(i, 1)
 
         this.emit(SystemEvent.PLAYER_LOOT_USED, { player: this, loot: loot })
+    }
+
+    /**
+     * Add a quest to this player's acive quests. Used to track what is unlocked and not.
+     * @param quest The baseRoute of a quest, i.e it's main identifier
+     */
+    public addActiveQuest(quest: string) {
+        if (this.hasActiveQuest(quest)) {
+            return Log.warning(`${this} has already activated ${quest}`)
+        }
+
+        this.quests.push(quest)
+    }
+
+    /**
+     * Check if this user current has the provided quest activated
+     * @param quest The quest baseRoute to check
+     */
+    public hasActiveQuest(quest: string) {
+        return this.quests.indexOf(quest) >= 0
+    }
+
+    /**
+     * Remove a quest from this player's list of active quests
+     * @param loot The loot to use
+     */
+    public removeActiveQuest(quest: string) {
+        const i = this.quests.indexOf(quest)
+
+        if (i < 0) {
+            return Log.error(`${this} has no active quest called "${quest}"`)
+        }
+
+        this.loot.splice(i, 1)
     }
 
     /**
@@ -184,6 +218,13 @@ export class Player extends EventEmitter {
      */
     public get hostname(): string {
         return `${this.ip}`
+    }
+
+    /**
+     * Get this player's currently active quests
+     */
+    public get quests(): string[] {
+        return this.user.activeQuests
     }
 
     /**

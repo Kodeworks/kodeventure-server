@@ -52,10 +52,6 @@ export class ExampleQuest extends Quest {
      * @param player A Player object
      */
     public async handleNewPlayer(player: Player): Promise<void> {
-        Log.debug(`${player} unlocked ${this}`, SystemEvent.PLAYER_QUEST_UNLOCKED)
-
-        player.notify(`You have unlocked ${this}, a challenge awaits!`)
-
         await this.startPeriodicTask(player)
     }
 
@@ -76,15 +72,19 @@ export class ExampleQuest extends Quest {
         // Get the Player XP tracker object
         const xp = this.xp.get(player)
 
+        const question = 'Who invented C++?'
+        const answer = 'bjarne stroustrup'
+
         // Schedule our periodic challenge to the Player
         const task = this.engine.scheduler.schedulePeriodic(async () => {
             try {
-                const postResult = await player.sendHttpPostRequest('my-simple-quest', { msg: 'Who invented C++?' });
-
-                Log.debug(`${player} ${JSON.stringify(postResult)}`, SystemEvent.PLAYER_QUEST_RESPONSE);
+                const postResult = await player.sendHttpPostRequest(
+                    'my-simple-quest',
+                    { msg: question }
+                )
 
                 // The validation here should be better ofc, but works for this example
-                if (postResult && postResult.answer && postResult.answer.toLowerCase() === 'bjarne stroustrup') {
+                if (postResult && postResult.answer && postResult.answer.toLowerCase() === answer) {
                     player.addScore(xp.gain())
                 } else {
                     player.addScore(xp.lose())
@@ -95,12 +95,12 @@ export class ExampleQuest extends Quest {
                 if (xp.completed) {
                     const [ success, fail, total ] = xp.stats
 
-                    player.notify(`Quest ${this.baseRoute} complete! You scored ${success} success, ${fail} fails (${total} total)`)
-
                     if (fail > 3) {
                         player.addTitle('Noobman 9000')
                     }
 
+                    // Cleanup
+                    this.completeForPlayer(player)
                     this.engine.scheduler.cancel(task)
                 }
             } catch (e) {

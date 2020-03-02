@@ -222,6 +222,7 @@ export class GameEngine extends EventEmitter {
     private registerPlayer(player: Player) {
         try {
             this.registeredPlayers.set(player.userToken, player)
+
             this.subscribeToPlayerEvents(player)
 
             Log.info(`${player}`, SystemEvent.PLAYER_CONNECTED)
@@ -234,8 +235,16 @@ export class GameEngine extends EventEmitter {
 
             this.emit(SystemEvent.PLAYER_CONNECTED, { player: player })
 
-            // TODO: REMOVE, DEMO ONLY
-            this.emit(SystemEvent.PLAYER_QUEST_UNLOCKED, { player: player, quest: this.getQuest('trivia/python-inventor')})
+            // Signal quest unlock for all quests the player currently has active
+            for (const quest of player.quests) {
+                const q = this.getQuest(quest)
+
+                if (q) {
+                    this.emit(SystemEvent.PLAYER_QUEST_UNLOCKED, { player: player, quest: q })
+                } else {
+                    Log.error(`Failed to find quest object for "${quest}"`, 'engine')
+                }
+            }
         } catch (e) {
             Log.error(`Failed to register player ${player}: ${e.message}`, SystemEvent.PLAYER_CONNECTED)
         }
@@ -276,6 +285,10 @@ export class GameEngine extends EventEmitter {
         const quest = this.getQuest(data.quest.baseRoute)
 
         if (quest) {
+            Log.debug(`${data.player} unlocked ${quest}`, SystemEvent.PLAYER_QUEST_UNLOCKED)
+
+            data.player.notify(`You have unlocked ${quest}, a challenge awaits!`)
+
             quest.emit(SystemEvent.PLAYER_QUEST_UNLOCKED, data)
         } else {
             Log.error(`Failed to find quest object for quest ${data.quest.baseRoute}`, SystemEvent.PLAYER_QUEST_UNLOCKED)
