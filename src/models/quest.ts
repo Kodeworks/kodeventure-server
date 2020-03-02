@@ -82,7 +82,7 @@ export class Experience {
 
         if (this.maxSuccess <= 0) return 0
 
-        this.maxSuccess
+        this.maxSuccess--
         this.successCount++
 
         return this.successXp

@@ -4,6 +4,12 @@ Server application for the Kodeventure programming RPG
 
 # Setup
 
+#### Update quest submodule
+
+```
+git submodule update --init
+```
+
 #### Install MongoDB:
 
 Via APT
