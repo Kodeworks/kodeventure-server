@@ -55,4 +55,16 @@ export class UserController {
         }
     }
 
+    /**
+     * Reset single player stats.
+     * @param req Express.js request object
+     * @param res Express.js response object
+     */
+    public resetPlayerStats(req: Request, res: Response) {
+        if (authorize(req, res)) {
+            const name = req.params.name
+            UserDatabaseModel.updateOne({ name: name }, { $set: { titles: [], loot: [], score: 0 } })
+        }
+    }
+
 }
