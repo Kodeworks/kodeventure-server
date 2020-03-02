@@ -225,7 +225,7 @@ export class Scheduler {
      */
     private handleGameUnpaused() {
         if (this.state === SchedulerState.PAUSED) {
-            Log.debug(`Starting unpause procedure for ${this}`, 'scheduler')
+            Log.info(`Starting unpause procedure for ${this}`, 'scheduler')
             
             // Add some jitter between each task to prevent bursting
             let jitter = Math.random() * MAX_UNPAUSE_JITTER
@@ -244,7 +244,7 @@ export class Scheduler {
                 jitter += Math.random() * MAX_UNPAUSE_JITTER
             }
 
-            setTimeout(() => Log.debug(`Unpause procedure complete`, 'scheduler'), jitter + 1)
+            setTimeout(() => Log.info(`Unpause procedure complete`, 'scheduler'), jitter + 1)
 
             this.state = SchedulerState.RUNNING
 
