@@ -78,29 +78,33 @@ export class ExampleQuest extends Quest {
 
         // Schedule our periodic challenge to the Player
         const task = this.engine.scheduler.schedulePeriodic(async () => {
-            const postResult = await player.sendHttpPostRequest('my-simple-quest', {message: 'Who invented C++?'});
+            try {
+                const postResult = await player.sendHttpPostRequest('my-simple-quest', { msg: 'Who invented C++?' });
 
-            Log.debug(`${player} ${JSON.stringify(postResult)}`, SystemEvent.PLAYER_QUEST_RESPONSE);
+                Log.debug(`${player} ${JSON.stringify(postResult)}`, SystemEvent.PLAYER_QUEST_RESPONSE);
 
-            // The validation here should be better ofc, but works for this example
-            if (postResult && postResult.answer && postResult.answer.toLowerCase() === 'bjarne stroustrup') {
-                player.addScore(xp.gain())
-            } else {
-                player.addScore(xp.lose())
+                // The validation here should be better ofc, but works for this example
+                if (postResult && postResult.answer && postResult.answer.toLowerCase() === 'bjarne stroustrup') {
+                    player.addScore(xp.gain())
+                } else {
+                    player.addScore(xp.lose())
 
-                player.notify(`You are failing the ${this.baseRoute} quest, step it up! Lost 2 points.`)
-            }
-
-            if (xp.completed) {
-                const [ success, fail, total ] = xp.stats
-    
-                player.notify(`Quest ${this.baseRoute} complete! You scored ${success} success, ${fail} fails (${total} total)`)
-    
-                if (fail > 3) {
-                    player.addTitle('Noobman 9000')
+                    player.notify(`You are failing the ${this.baseRoute} quest, step it up! Lost 2 points.`)
                 }
 
-                this.engine.scheduler.cancel(task)
+                if (xp.completed) {
+                    const [ success, fail, total ] = xp.stats
+
+                    player.notify(`Quest ${this.baseRoute} complete! You scored ${success} success, ${fail} fails (${total} total)`)
+
+                    if (fail > 3) {
+                        player.addTitle('Noobman 9000')
+                    }
+
+                    this.engine.scheduler.cancel(task)
+                }
+            } catch (e) {
+                Log.error(e.message, SystemEvent.PLAYER_QUEST_RESPONSE)
             }
         }, this.interval)
     }

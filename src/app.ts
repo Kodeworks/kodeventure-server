@@ -8,7 +8,7 @@ import path from 'path'
 
 import { GameEngine } from './engine/engine'
 import { Log } from './logging'
-import { RickRollQuest } from './quests/rickroll'
+import quests from './quests'
 import { Routes } from './routes'
 import { WebSocketHandler } from './websocket'
 
@@ -48,14 +48,6 @@ export default class Kodeventure {
     }
 
     /**
-     * Put all your quest needs in here
-     */
-    public loadQuests() {
-        // Register the quests here, TODO: Move to some more fancy mechanism of defining the quest set
-        this.engine.registerQuest(new RickRollQuest(this.engine))
-    }
-
-    /**
      * Start the application web server
      * @param host The hostname to bind to
      * @param port The port to bind to
@@ -64,6 +56,15 @@ export default class Kodeventure {
         this.httpServer.listen(port, host, () => {
             Log.info(`Started listening on ${host}:${port} using game engine ${this.engine}`, 'server')
         })
+    }
+
+    /**
+     * Load all quests defined in index.ts in the quests package
+     */
+    private loadQuests() {
+        for (const quest of quests) {
+            this.engine.registerQuest(new quest(this.engine))
+        }
     }
 
     /**

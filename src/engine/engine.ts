@@ -2,8 +2,7 @@ import { EventEmitter } from 'events'
 import { Request, Response } from 'express'
 
 import { GameController } from '../controllers/gameController'
-import { SystemEvent, IPlayerError, IPlayerConnectingEvent } from './events'
-import { ExampleQuest } from '../examples/quest'
+import { SystemEvent, IPlayerError, IPlayerConnectingEvent, IPlayerQuestUnlockedEvent } from './events'
 import { Log } from '../logging'
 import { Quest } from "../models/quest"
 import { Player } from "../models/user"
@@ -181,13 +180,13 @@ export class GameEngine extends EventEmitter {
 
             switch (questRoute.method.toUpperCase()) {
                 case 'GET':
-                    this.routes.get(endpoint, questRoute.handler)
+                    this.routes.get(endpoint, (req, res) => questRoute.handler(req, res))
                     break
                 case 'POST':
-                    this.routes.post(endpoint, questRoute.handler)
+                    this.routes.post(endpoint, (req, res) => questRoute.handler(req, res))
                     break
                 case 'PUT':
-                    this.routes.put(endpoint, questRoute.handler)
+                    this.routes.put(endpoint, (req, res) => questRoute.handler(req, res))
                     break
                 default:
                     Log.error(`Could not register quest route: ${endpoint}, unsupported method ${questRoute.method}`)
@@ -211,6 +210,9 @@ export class GameEngine extends EventEmitter {
 
         // New player handling
         this.on(SystemEvent.PLAYER_CONNECTING, this.handlePlayerConnecting.bind(this))
+
+        // Listen for quest unlocks and dispatch to correct quest accordingly
+        this.on(SystemEvent.PLAYER_QUEST_UNLOCKED, this.handlePlayerQuestUnlocked.bind(this))
     }
 
     /**
@@ -232,7 +234,7 @@ export class GameEngine extends EventEmitter {
         this.emit(SystemEvent.PLAYER_CONNECTED, { player: player })
 
         // TODO: REMOVE, DEMO ONLY
-        this.emit(SystemEvent.PLAYER_QUEST_UNLOCKED, { player: player, quest: this.getQuest('/example-quest')})
+        this.emit(SystemEvent.PLAYER_QUEST_UNLOCKED, { player: player, quest: this.getQuest('trivia/python-inventor')})
     }
 
     /**
@@ -263,6 +265,20 @@ export class GameEngine extends EventEmitter {
     }
 
     /**
+     * Event handler for when a player has unlocked a new quest
+     * @param data The player quest unlocked event data
+     */
+    private handlePlayerQuestUnlocked(data: IPlayerQuestUnlockedEvent) {
+        const quest = this.getQuest(data.quest.baseRoute)
+
+        if (quest) {
+            quest.emit(SystemEvent.PLAYER_QUEST_UNLOCKED, data)
+        } else {
+            Log.error(`Failed to find quest object for quest ${data.quest.baseRoute}`, SystemEvent.PLAYER_QUEST_UNLOCKED)
+        }
+    }
+
+    /**
      * Event handler for when a player has connected
      * @param data The player connected event data
      */
@@ -281,7 +297,7 @@ export class GameEngine extends EventEmitter {
                 const player = await Player.get(data.token, data.ip, data.ws)
 
                 this.registerPlayer(player)
-            } catch {
+            } catch (e) {
                 const payload: IPlayerError = { msg: `Could not find player with token "${data.token}"` }
 
                 data.ws.send(JSON.stringify({ type: SystemEvent.PLAYER_ERROR, data: payload }))

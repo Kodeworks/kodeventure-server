@@ -1,6 +1,7 @@
 import WebSocket from 'ws'
 
 import { Player } from '../models/user';
+import { Quest } from '../models/quest';
 
 /**
  * Complete enumeration of all events in the game engine
@@ -132,7 +133,9 @@ export interface IPlayerLootUsedEvent extends IPlayerEvent {
 /**
  * Event data structure for player quest unlocked
  */
-export interface IPlayerQuestUnlockedEvent extends IPlayerEvent {}
+export interface IPlayerQuestUnlockedEvent extends IPlayerEvent {
+    quest: Quest
+}
 
 /**
  * Event data structure for player quest request

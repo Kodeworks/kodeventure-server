@@ -1,3 +1,4 @@
+import { EventEmitter } from 'events'
 import { Request, Response } from 'express'
 
 import { GameEngine } from "../engine/engine"
@@ -115,7 +116,7 @@ export class Experience {
 /**
  * Base class for creating a Kodeventure quest
  */
-export abstract class Quest {
+export abstract class Quest extends EventEmitter {
     // The config parameters for the XP points given or lost in this quest
     private xpConfig: IExperienceConfig
 
@@ -141,6 +142,8 @@ export abstract class Quest {
      * @param engine The game engine this quest is registered to
      */
     constructor(engine: GameEngine, xpConfig: IExperienceConfig) {
+        super()
+
         this.engine = engine
         this.players = new Map()
         this.xp = new Map()
@@ -198,7 +201,12 @@ export abstract class Quest {
      * Configure subscriptions to all relevant game events
      */
     private subscribeToGameEvents() {
-        this.engine.on(SystemEvent.PLAYER_QUEST_UNLOCKED, (data: IPlayerQuestUnlockedEvent) => {
+        this.on(SystemEvent.PLAYER_QUEST_UNLOCKED, (data: IPlayerQuestUnlockedEvent) => {
+            // Shouldn't happen
+            if (data.quest !== this) {
+                return Log.error(`${this} received player unlocked event for anoter quest: ${data.quest}`, SystemEvent.PLAYER_QUEST_UNLOCKED)
+            }
+
             this.players.set(data.player.userToken, data.player)
 
             // Create and set up an XP container for this player, so the quest can keep track of its state
