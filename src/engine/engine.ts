@@ -220,21 +220,25 @@ export class GameEngine extends EventEmitter {
      * @param player The player to register
      */
     private registerPlayer(player: Player) {
-        this.registeredPlayers.set(player.userToken, player)
-        this.subscribeToPlayerEvents(player)
+        try {
+            this.registeredPlayers.set(player.userToken, player)
+            this.subscribeToPlayerEvents(player)
 
-        Log.info(`${player}`, SystemEvent.PLAYER_CONNECTED)
+            Log.info(`${player}`, SystemEvent.PLAYER_CONNECTED)
 
-        // Send a game_message event to the player over the websocket connection
-        player.notify(`Welcome ${player.name}! Great adventures await in the bitfields of doom...`)
-        if (this.gameState === GameState.STOPPED) {
-            player.notify(`The game has not yet started, be patient while we download more RAM`)
+            // Send a game_message event to the player over the websocket connection
+            player.notify(`Welcome ${player.name}! Great adventures await in the bitfields of doom...`)
+            if (this.gameState === GameState.STOPPED) {
+                player.notify(`The game has not yet started, be patient while we download more RAM`)
+            }
+
+            this.emit(SystemEvent.PLAYER_CONNECTED, { player: player })
+
+            // TODO: REMOVE, DEMO ONLY
+            this.emit(SystemEvent.PLAYER_QUEST_UNLOCKED, { player: player, quest: this.getQuest('trivia/python-inventor')})
+        } catch (e) {
+            Log.error(`Failed to register player ${player}: ${e.message}`, SystemEvent.PLAYER_CONNECTED)
         }
-
-        this.emit(SystemEvent.PLAYER_CONNECTED, { player: player })
-
-        // TODO: REMOVE, DEMO ONLY
-        this.emit(SystemEvent.PLAYER_QUEST_UNLOCKED, { player: player, quest: this.getQuest('trivia/python-inventor')})
     }
 
     /**
