@@ -18,9 +18,13 @@ function Scoreboard() {
    * Adds message to event feed. Ensure feed only contains 15 messages.
    * @param {string} newMessage
    */
-  function updateKillFeed(newMessage) {
+  function updateKillFeed(newMessage, options) {
+    options = options || {};
+
+    const message = e('span', { className: `message-type--${options.type}`}, newMessage)
+
     setKillFeed(killFeed => {
-      return [...killFeed.slice(0, 14), newMessage]
+      return [...killFeed.slice(0, 14), message]
     })
   }
 
