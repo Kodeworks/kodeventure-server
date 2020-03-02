@@ -52,6 +52,30 @@ def listusers():
     else:
         print('ERROR:', response.text)
 
+def deleteall():
+    response = request.delete(f'{SERVER}/users', headers=HEADERS, verify=False)
+
+    if response.status_code == 200:
+        print('All users deleted')
+    else:
+        print('ERROR:', response.text)
+
+def resetall():
+    response = request.put(f'{SERVER}/users/reset', headers=HEADERS, verify=False)
+
+    if response.status_code == 200:
+        print('All user stats reset')
+    else:
+        print('ERROR:', response.text)
+
+def resetplayer(player):
+    response = request.put(f'{SERVER}/user/{player}/reset', headers=HEADERS, verify=False)
+
+    if response.status_code == 200:
+        print(f'Player stats for {player} is reset')
+    else:
+        print('ERROR:', response.text)
+
 
 def cert():
     response = requests.post(f'{SERVER}/cert', verify=False)
@@ -128,6 +152,9 @@ if __name__ == '__main__':
         'pause': pause,
         'unpause': unpause,
         'stop': stop,
+        'deleteall': deleteall,
+        'resetall': resetall,
+        'resetplayer': resetplayer
     }
 
     parser.add_argument(
