@@ -1,21 +1,3 @@
-
-//-----------------------------------------------------------------------------
-// TODO: Test data - to be removed
-//-----------------------------------------------------------------------------
-const _players = [
-  { name: 'Foo', title: '', score: 10 },
-  { name: 'Bar', title: '', score: 10  },
-  { name: 'Baz', title: '', score: 10  }
-]
-
-const _killfeed = [
-  '(test msg) Welcome back mr. Foo',
-  '(test msg) mr. Foo elimiated mr. Bar with a straw hat'
-]
-//-----------------------------------------------------------------------------
-
-
-
 /**
  * Main Scoreboard component
  */
