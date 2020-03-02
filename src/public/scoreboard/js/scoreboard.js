@@ -33,33 +33,22 @@ function Scoreboard() {
    * Add player to scoreboard. Checks of player exists by name (for now) before appending new player.
    * @param {Player} player
    */
-  function addPlayer(player) {
+  function updatePlayerList(player) {
     setPlayers(players => {
-      const playerExists = players.findIndex(({ name }) => name === player.name)
+      const playerIndex = players.findIndex(({ name }) => name === player.name)
 
-      if (playerExists > -1) {
+      if (playerIndex > -1) {
         // Update player score if score is changed
-        if (players[playerExists].score !== player.score) {
-          players[playerExists].score = player.score
-          return [...players]
+        if (players[playerIndex].score !== player.score) {
+          players[playerIndex].score = player.score
         }
-
-        // Return same list // do nothing if not
-        return players
+      } else {
+        // Push new player onto list
+        player.titles = player.titles.slice(0, 4)
+        players.push(player)
       }
 
-      return [...players, player]
-    })
-  }
-
-
-  /**
-   * Updates scoreboard on player_score event by sorting the players by score
-   */
-  function updateScoreBoard() {
-
-    // Sort by highest score
-    setPlayers(players => {
+      // Sort player list by score before updating the players list
       players.sort((a, b) => b.score - a.score)
       return [...players]
     })
@@ -67,8 +56,22 @@ function Scoreboard() {
 
 
 
-  function updatePlayerTitles(player) {
+  /**
+   * Append new title to player object
+   * @param {Player} player The player object
+   * @param {string} title Newly received title
+   */
+  function updatePlayerTitles(player, title) {
+    setPlayers(players => {
+      const playerIndex = players.findIndex(({ name }) => name === player.name)
 
+      if (playerIndex > -1) {
+        players[playerIndex].titles = [...players[playerIndex].titles.slice(0, 3), title]
+        return [...players]
+      }
+
+      return players
+    })
   }
 
 
@@ -82,22 +85,16 @@ function Scoreboard() {
     switch (type) {
       case 'player_connected':
         updateKillFeed(`${data.player.name} just connected!`)
-        addPlayer(data.player)
-        break
-
-      case 'player_reconnected':
-        // Do nothing on payer reconnect
+        updatePlayerList(data.player)
         break
 
       case 'player_score':
-        addPlayer(data.player)
-        updateScoreBoard()
+        updatePlayerList(data.player)
         break
 
       case 'player_title':
-        updatePlayerTitles(data.player)
         updateKillFeed(`${data.player.name} gained title: ${data.title}`)
-
+        updatePlayerTitles(data.player, data.title)
         break
 
       case 'player_loot_obtained':
