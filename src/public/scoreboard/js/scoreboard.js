@@ -11,9 +11,6 @@ function Scoreboard() {
     ws.onopen = handleConnected
     ws.onmessage = receiveMessage
 
-    // TODO: Setup testdata - to be removed
-    // setPlayers(_players)
-    // setKillFeed(_killfeed)
   }, [])
 
 
