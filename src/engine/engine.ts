@@ -3,8 +3,9 @@ import { Request, Response } from 'express'
 
 import { GameController } from '../controllers/gameController'
 import { SystemEvent, IPlayerError, IPlayerConnectingEvent } from './events'
+import { ExampleQuest } from '../examples/quest'
 import { Log } from '../logging'
-import { Quest, ExampleQuest } from "../models/quest"
+import { Quest } from "../models/quest"
 import { Player } from "../models/user"
 import { Routes } from '../routes'
 import { Scheduler } from './scheduler'
