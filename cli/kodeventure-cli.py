@@ -62,7 +62,7 @@ def deleteall():
 
 def deleteplayer():
     playerId = input('Player ID: ')
-    response = request.delete(f'{SERVER}/user/playerId', headers=HEADERS, verify=False)
+    response = request.delete(f'{SERVER}/user/{playerId}', headers=HEADERS, verify=False)
 
     if response.status_code == 200:
         print(f'Player({playerId}) is deleted deleted')
