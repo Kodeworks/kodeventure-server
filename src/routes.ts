@@ -22,7 +22,11 @@ export class Routes {
 
         // Admin endpoints
         this.post('/user', this.userController.addNewUser)
+        this.put('/user/:name/reset', this.userController.resetPlayerStats)
+
         this.get('/users', this.userController.getUsers)
+        this.put('/users/reset', this.userController.resetAllStats)
+        this.delete('/users/delete', this.userController.deleteAllUsers)
 
         // Certificate creation endpoint
         this.post('/cert', this.certController.createPlayerCert.bind(this.certController))
