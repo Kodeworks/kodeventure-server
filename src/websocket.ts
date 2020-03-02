@@ -78,10 +78,22 @@ export class WebSocketHandler {
     this.engine.on(SystemEvent.PLAYER_LOOT_USED, data => this.broadcastToScoreBoard(SystemEvent.PLAYER_LOOT_USED, data))
 
     // Subscribe to relevant game events that should be broadcast to all players
-    this.engine.on(SystemEvent.GAME_STARTED, data => this.broadcastToPlayers(SystemEvent.GAME_STARTED, data))
-    this.engine.on(SystemEvent.GAME_PAUSED, data => this.broadcastToPlayers(SystemEvent.GAME_PAUSED, data))
-    this.engine.on(SystemEvent.GAME_UNPAUSED, data => this.broadcastToPlayers(SystemEvent.GAME_UNPAUSED, data))
-    this.engine.on(SystemEvent.GAME_ENDED, data => this.broadcastToPlayers(SystemEvent.GAME_ENDED, data))
+    this.engine.on(SystemEvent.GAME_STARTED, data => {
+      this.broadcastToPlayers(SystemEvent.GAME_STARTED, data)
+      this.broadcastToScoreBoard(SystemEvent.GAME_STARTED, data)
+    })
+    this.engine.on(SystemEvent.GAME_PAUSED, data => {
+      this.broadcastToPlayers(SystemEvent.GAME_PAUSED, data)
+      this.broadcastToScoreBoard(SystemEvent.GAME_PAUSED, data)
+    })
+    this.engine.on(SystemEvent.GAME_UNPAUSED, data => {
+      this.broadcastToPlayers(SystemEvent.GAME_UNPAUSED, data)
+      this.broadcastToScoreBoard(SystemEvent.GAME_UNPAUSED, data)
+    })
+    this.engine.on(SystemEvent.GAME_ENDED, data => {
+      this.broadcastToPlayers(SystemEvent.GAME_ENDED, data)
+      this.broadcastToScoreBoard(SystemEvent.GAME_ENDED, data)
+    })
   }
 
   /**
