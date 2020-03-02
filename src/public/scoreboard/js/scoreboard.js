@@ -105,8 +105,23 @@ function Scoreboard() {
         updateKillFeed(`${data.player.name} used ${data.loot}`)
         break
 
-      default:
-        console.warn('Unknown event')
+      case 'game_started':
+        updateKillFeed(`Game started!`, { type: 'gameStarted' })
+        break
+
+      case 'game_paused':
+        updateKillFeed(`Game paused`, { type: 'gamePaused' })
+        break
+
+      case 'game_unpaused':
+        updateKillFeed(`Game unpaused`, { type: 'gameUnpaused' })
+        break
+
+      case 'game_ended':
+        updateKillFeed(`Game ended:(`, { type: 'gameEnded' })
+        break
+
+      default: console.warn('Unknown event')
     }
   }
 
