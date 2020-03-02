@@ -7,9 +7,6 @@
         <link rel="stylesheet" type="text/css" href="/css/reset.css">
         <link rel="stylesheet" type="text/css" href="/css/main.css">
         <link rel="stylesheet" type="text/css" href="/user/user.css">
-
-        <script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
-        <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
     </head>
     <body>
       <header class="mainHeader">
@@ -41,7 +38,7 @@
 
         <div class="user-registration-data--controllers">
           <button id="user-delete" class="btn btn-danger" type="button">Reset user data</button>
-          <span class="user-registration-data--deleteInfo">Deleting this data won't remove you from the Database. It only allows you to register a new user.</span>
+          <span class="user-registration-data--deleteInfo">Deleting this data won't remove you from the Database. It only allows you to register a new player.</span>
         </div>
       </div>
     </main>
@@ -94,7 +91,7 @@
         const kodeventureUser = localStorage.getItem('kodeventure_user')
 
         if (kodeventureUser) {
-          if (confirm('U sure u wanna delete your user data?')) {
+          if (confirm('U sure u wanna delete your player data?')) {
             localStorage.removeItem('kodeventure_user')
             playerName.value = ''
             location.reload()
