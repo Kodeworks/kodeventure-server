@@ -8,6 +8,7 @@ import path from 'path'
 
 import { GameEngine } from './engine/engine'
 import { Log } from './logging'
+import { RickRollQuest } from './quests/rickroll'
 import { Routes } from './routes'
 import { WebSocketHandler } from './websocket'
 
@@ -41,7 +42,17 @@ export default class Kodeventure {
         this.httpServer = https.createServer(cert, this.webapp)
         this.ws = new WebSocketHandler(this.httpServer, this.engine)
 
+        this.loadQuests()
+
         Log.debug(`Constructed Kodeventure`, 'server')
+    }
+
+    /**
+     * Put all your quest needs in here
+     */
+    public loadQuests() {
+        // Register the quests here, TODO: Move to some more fancy mechanism of defining the quest set
+        this.engine.registerQuest(new RickRollQuest(this.engine))
     }
 
     /**

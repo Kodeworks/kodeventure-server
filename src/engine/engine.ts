@@ -53,9 +53,6 @@ export class GameEngine extends EventEmitter {
         this.configureGameEvents()
         this.startPeriodicDatabaseBackup()
 
-        // Register the quests here, TODO: Move to some more fancy mechanism of defining the quest set
-        this.registerQuest(new ExampleQuest(this))
-
         Log.debug(`Constructed ${this}`, 'engine')
     }
 
@@ -168,7 +165,7 @@ export class GameEngine extends EventEmitter {
      * Register a quest to the game engine
      * @param quest A quest inheriting from the Quest base class
      */
-    private registerQuest(quest: Quest): void {
+    public registerQuest(quest: Quest): void {
         if (this.quests.has(quest.baseRoute)) {
             return Log.error(`Could not register quest ${quest}, already registered!`, 'engine')
         }
