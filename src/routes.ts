@@ -23,6 +23,7 @@ export class Routes {
         // Admin endpoints
         this.post('/user', this.userController.addNewUser)
         this.put('/user/:id/reset', this.userController.resetPlayerStats)
+        this.delete('/user/:id', this.userController.deleteUser)
 
         this.get('/users', this.userController.getUsers)
         this.put('/users/reset', this.userController.resetAllStats)

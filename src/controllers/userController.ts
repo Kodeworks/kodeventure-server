@@ -80,4 +80,11 @@ export class UserController {
         }
     }
 
+    public deleteUser(req: Request, res: Response) {
+        if (authorize(req, res)) {
+            const playerId = req.params.id
+            UserDatabaseModel.deleteOne({ _id: playerId })
+        }
+    }
+
 }

@@ -60,6 +60,15 @@ def deleteall():
     else:
         print('ERROR:', response.text)
 
+def deleteplayer():
+    playerId = input('Player ID: ')
+    response = request.delete(f'{SERVER}/user/playerId', headers=HEADERS, verify=False)
+
+    if response.status_code == 200:
+        print(f'Player({playerId}) is deleted deleted')
+    else:
+        print('ERROR:', response.text)
+
 def resetall():
     response = request.put(f'{SERVER}/users/reset', headers=HEADERS, verify=False)
 
@@ -154,6 +163,7 @@ if __name__ == '__main__':
         'unpause': unpause,
         'stop': stop,
         'deleteall': deleteall,
+        'deleteplayer': deleteplayer,
         'resetall': resetall,
         'resetplayer': resetplayer
     }
