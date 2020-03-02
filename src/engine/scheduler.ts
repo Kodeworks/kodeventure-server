@@ -5,7 +5,7 @@ import { Log } from '../logging'
 
 
 // The maximum number of ms to wait before re-scheduling a paused task when resuming
-const MAX_UNPAUSE_JITTER: number = 200
+const MAX_UNPAUSE_JITTER: number = 1000
 
 
 /**
@@ -30,6 +30,7 @@ enum SchedulerState {
  */
 enum TaskType {
     IMMEDIATE,
+    TIMEOUT,
     PERIODIC
 }
 
@@ -39,13 +40,13 @@ enum TaskType {
  * @param task The function to execute
  * @param params The (optional) parameters to pass to the function
  * @param type Schedule immediatly or periodic
- * @param interval Optional interval in ms, only for periodic
+ * @param timtout Optional interval in ms, only for periodic or timeout
  */
 interface ITask {
     task: Task,
     params: TaskParams,
     type: TaskType
-    interval?: number
+    timeout?: number
 }
 
 
@@ -81,7 +82,7 @@ export class Scheduler {
      * @param task The function to be executed
      * @param params The (optional) parameters to pass to the function
      */
-    public scheduleOnce(task: Task, ...params: TaskParams) {
+    public scheduleNow(task: Task, ...params: TaskParams) {
         if (this.state === SchedulerState.RUNNING) {
             setImmediate(task, ...params)
 
@@ -97,8 +98,35 @@ export class Scheduler {
     }
 
     /**
+     * Schedule a task to be run asynchronously after a given delay.
+     * Returns a task ID that can be used to cancel the task.
+     * @param task The function to be executed at a regular interval
+     * @param delay The delay in miliseconds
+     * @param params The (optional) parameters to pass to the function
+     */
+    public scheduleAfter(task: Task, delay: number, ...params: TaskParams): number {
+        if (this.state === SchedulerState.RUNNING || this.state === SchedulerState.PAUSED) {
+            const taskId = this.registerTask(TaskType.TIMEOUT, task, params, delay)
+
+            if (this.state === SchedulerState.RUNNING) {
+                this.taskTimers.set(taskId, setTimeout(task, delay, ...params))
+            } else {
+                Log.debug(`Queued task ${taskId} to run after ${delay} ms with ${params.length} params, as scheduler is paused`, 'scheduler')
+            }
+
+            Log.debug(`Scheduled task ${taskId} to run after ${delay} ms with ${params.length} params`, 'scheduler')
+
+            return taskId
+        } else {
+            Log.error(`Request to schedule a task after ${delay} ms, but scheduler state is ${this.state}`, 'scheduler')
+
+            return -1
+        }
+    }
+
+    /**
      * Schedule a task to be run to be asynchronously run at a regular interval.
-     * Returns a Timeout object that can be used to cancel the task.
+     * Returns a task ID that can be used to cancel the task.
      * @param task The function to be executed at a regular interval
      * @param interval The interval in miliseconds
      * @param params The (optional) parameters to pass to the function
@@ -161,14 +189,14 @@ export class Scheduler {
      * @param type The type of the task
      * @param task The function to execute
      * @param params The (optional) parameters to pass to the function
-     * @param interval The optional interval to run the task at, only relevant for periodic tasks
+     * @param timeout The optional imtout to run the task at, only relevant for periodic tasks and run once after delay tasks
      */
-    private registerTask(type: TaskType, task: Task, params: TaskParams, interval?: number): number {
+    private registerTask(type: TaskType, task: Task, params: TaskParams, timeout?: number): number {
         this.tasks.set(++this.taskCounter, {
             type: type,
             task: task,
             params: params,
-            interval: interval
+            timeout: timeout
         })
 
         return this.taskCounter
@@ -206,8 +234,10 @@ export class Scheduler {
                 setTimeout(() => {
                     if (task.type === TaskType.IMMEDIATE) {
                         setImmediate(task.task, ...task.params)
-                    } else {
-                        this.taskTimers.set(taskId, setInterval(task.task, task.interval, ...task.params))
+                    } else if (task.type === TaskType.PERIODIC) {
+                        this.taskTimers.set(taskId, setInterval(task.task, task.timeout, ...task.params))
+                    } else if (task.type === TaskType.TIMEOUT) {
+                        this.taskTimers.set(taskId, setTimeout(task.task, task.timeout, ...task.params))
                     }
                 }, jitter)
 

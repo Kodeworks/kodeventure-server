@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "ts-node ./src/server.ts",
-    "start": "tsnd --no-warnings --respawn ./src/server.ts",
+    "start": "tsnd --unhandled-rejections=strict --no-warnings --respawn ./src/server.ts",
     "prod": "npm run build && npm run start"
   },
   "keywords": [],

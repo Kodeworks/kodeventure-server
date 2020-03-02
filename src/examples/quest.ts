@@ -56,7 +56,7 @@ export class ExampleQuest extends Quest {
 
         player.notify(`You have unlocked ${this}, a challenge awaits!`)
 
-        this.startPeriodicTask(player)
+        await this.startPeriodicTask(player)
     }
 
     /**
