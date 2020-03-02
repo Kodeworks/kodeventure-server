@@ -1,47 +1,5 @@
 @import url('https://fonts.googleapis.com/css?family=Roboto+Mono&display=swap');
 
-body {
-  font-family: Inter,-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol;
-  line-height: 1.625;
-  font-size: 14px;
-}
-
-h1 {
-  font-size: 32px;
-  font-weight: 500;
-}
-
-h2 {
-  font-weight: 600;
-  margin-bottom: 5px;
-}
-
-.mainHeader {
-  width: 100%;
-  background-color: #1d80ac;
-  color: #fff;
-  height: 200px;
-  position: relative;
-  margin-bottom: 35px;
-}
-
-.mainHeader-container {
-  width: 1280px;
-  margin: 0 auto;
-  position: absolute;
-  bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.logo {
-  margin-bottom: -6px;
-  margin-left: 2px;
-}
-.logo img{
-  width: 150px;
-}
-
 #scoreboard {
   width: 1280px;
   margin: 0 auto;
