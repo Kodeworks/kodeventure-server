@@ -31,7 +31,10 @@ export const enum SystemEvent {
 
     // Player related errors and warnings
     PLAYER_ERROR = "player_error",
-    PLAYER_WARNING = "player_warning"
+    PLAYER_WARNING = "player_warning",
+
+    // General system events
+    DB_DELETE_ERROR = "db_delete_error"
 }
 
 // Interface mixins
