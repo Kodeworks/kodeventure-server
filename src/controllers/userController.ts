@@ -1,4 +1,5 @@
 import { Request, Response } from 'express'
+import path from 'path'
 
 import { authorize } from './auth'
 import { UserDatabaseModel } from '../models/user'
