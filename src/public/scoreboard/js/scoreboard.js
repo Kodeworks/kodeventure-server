@@ -130,7 +130,7 @@ function Scoreboard() {
    * Scoreboard connected handler
    */
   function handleConnected() {
-    console.info('Im connected!')
+    updateKillFeed(`We're online! Welcome to the hall of fame!"`, { type: 'scoreboardConnected' })
   }
 
 
