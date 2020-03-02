@@ -135,7 +135,8 @@ function Scoreboard() {
 
 
   return e(React.Fragment, null,
-    KillFeed(killFeed),
+    e('div', { className: '' }, KillFeed(killFeed), PlayerCount(players.length)),
+
     PlayerList(players)
   )
 }
@@ -150,7 +151,7 @@ function PlayerList(players) {
     e('div', { className: 'scoreboard-title' },
       e('div', { className: 'player-rank' }, 'Rank'),
       e('div', { className: 'player-name' }, 'Name'),
-      e('div', { className: 'player-titles' }, 'Title'),
+      e('div', { className: 'player-titles' }, 'Titles'),
       e('div', { className: 'player-score' }, 'Score')
     ),
     players.map((player, index) => Player(player, index))
@@ -168,5 +169,13 @@ function KillFeed(feed) {
     e('h2', { className: 'kill-feed-header' }, 'Last events'),
     e('ul', { className: 'kill-feed-list' }, feed.map((msg, index) => e('li', null, msg)))
   )
+}
+
+/**
+ * Renders the player count
+ * @param {Number} playerCount Number of players currenltly registered in the game
+ */
+function PlayerCount(playerCount) {
+  return e('div', { className: 'playerCount' }, `Total players in the hall of fame: ${playerCount}`)
 }
 
