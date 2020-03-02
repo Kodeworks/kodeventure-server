@@ -69,8 +69,8 @@ def resetall():
         print('ERROR:', response.text)
 
 def resetplayer():
-    playerName = input('Player name: ')
-    response = request.put(f'{SERVER}/user/{playerName}/reset', headers=HEADERS, verify=False)
+    playerId = input('Player ID: ')
+    response = request.put(f'{SERVER}/user/{playerId}/reset', headers=HEADERS, verify=False)
 
     if response.status_code == 200:
         print(f'Player stats for {player} is reset')

@@ -64,8 +64,8 @@ export class UserController {
      */
     public resetPlayerStats(req: Request, res: Response) {
         if (authorize(req, res)) {
-            const name = req.params.name
-            UserDatabaseModel.updateOne({ name: name }, { $set: { titles: [], loot: [], score: 0 } })
+            const playerId = req.params.id
+            UserDatabaseModel.updateOne({ _id: playerId }, { $set: { titles: [], loot: [], score: 0 } })
         }
     }
 
