@@ -16,7 +16,8 @@ const UserSchema: Schema = new Schema({
     name: { type: String, required: true, unique: true },
     score: { type: Number, required: true },
     titles: { type: [String], required: true },
-    loot: { type: [String], required: true }
+    loot: { type: [String], required: true },
+    activeQuests: { type: [String], required: true }
 })
 
 /**
@@ -28,7 +29,8 @@ export interface IUser extends Document {
     name: string
     score: number
     titles: string[]
-    loot: string[]
+    loot: string[],
+    activeQuests: string[]
 }
 
 /**
