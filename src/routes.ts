@@ -69,4 +69,19 @@ export class Routes {
         this.app.put(route, handler)
         this.routes.add(`PUT ${route}`)
     }
+
+
+    /**
+     * Register a request handler for DELETE requests at the specified route.
+     * @param route The route to register
+     * @param handler The request handler for the endpoiunt
+     */
+    public delete(route: string, handler: (req: Request, res: Response) => void) {
+        if (this.routes.has(route)) {
+            return Log.error(`Could not add route ${route} as it is already registered`, "routes")
+        }
+
+        this.app.delete(route, handler)
+        this.routes.add(`DELETE ${route}`)
+    }
 }
