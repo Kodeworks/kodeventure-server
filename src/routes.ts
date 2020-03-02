@@ -20,14 +20,17 @@ export class Routes {
         // Serve scoreboard on main page
         this.get('/', this.scoreboardController.getIndex)
 
-        // Admin endpoints
+        this.get('/user', this.userController.getIndex)
         this.post('/user', this.userController.addNewUser)
+
+        // Admin endpoints
         this.put('/user/:id/reset', this.userController.resetPlayerStats)
         this.delete('/user/:id', this.userController.deleteUser)
 
         this.get('/users', this.userController.getUsers)
         this.put('/users/reset', this.userController.resetAllStats)
         this.delete('/users/delete', this.userController.deleteAllUsers)
+
 
         // Certificate creation endpoint
         this.post('/cert', this.certController.createPlayerCert.bind(this.certController))
