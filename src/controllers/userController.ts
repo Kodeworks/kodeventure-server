@@ -10,6 +10,16 @@ import { SystemEvent } from '../engine/events'
  * Basic user controller used for listing or adding new users through CLI or admin page
  */
 export class UserController {
+
+    /**
+     * Resolve index of GET /user.
+     * @param req Express.js request object
+     * @param res Express.js response object
+     */
+    public getIndex(req: Request, res: Response) {
+        res.sendFile(path.resolve(__dirname, '..', 'public', 'user', 'user.html'))
+    }
+
     /**
      * Lists all users in database.
      * @param req Express.js request object
