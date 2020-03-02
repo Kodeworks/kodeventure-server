@@ -298,14 +298,14 @@ export class Player extends EventEmitter {
      * @param route The route to GET.
      */
     public sendHttpGetRequest = async (route: string) => {
-        const url = `http://${this.ip}:${PLAYER_PORT}/${route}`;
+        const url = `https://${this.ip}:${PLAYER_PORT}/${route}`;
         try {
             const response = await fetch(url, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': this.serverToken
-                }
+                },
             });
             const json = await response.json();
             return json;
@@ -321,7 +321,7 @@ export class Player extends EventEmitter {
      * @param payload The object that will be posted.
      */
     public sendHttpPostRequest = async (route: string, payload: object) => {
-        const url = `http://${this.ip}:${PLAYER_PORT}/${route}`;
+        const url = `https://${this.ip}:${PLAYER_PORT}/${route}`;
         try {
             const response = await fetch(url, {
                 method: 'POST',
@@ -345,7 +345,7 @@ export class Player extends EventEmitter {
      * @param payload The object that will be posted.
      */
     public sendHttpPutRequest = async (route: string, payload: object) => {
-        const url = `http://${this.ip}:${PLAYER_PORT}/${route}`;
+        const url = `https://${this.ip}:${PLAYER_PORT}/${route}`;
         try {
             const response = await fetch(url, {
                 method: 'PUT',
