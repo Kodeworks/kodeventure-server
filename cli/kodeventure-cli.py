@@ -53,7 +53,7 @@ def listusers():
         print('ERROR:', response.text)
 
 def deleteall():
-    response = request.delete(f'{SERVER}/users', headers=HEADERS, verify=False)
+    response = requests.delete(f'{SERVER}/users', headers=HEADERS, verify=False)
 
     if response.status_code == 200:
         print('All users deleted')
@@ -62,7 +62,7 @@ def deleteall():
 
 def deleteplayer():
     playerId = input('Player ID: ')
-    response = request.delete(f'{SERVER}/user/{playerId}', headers=HEADERS, verify=False)
+    response = requests.delete(f'{SERVER}/user/{playerId}', headers=HEADERS, verify=False)
 
     if response.status_code == 200:
         print(f'Player({playerId}) is deleted deleted')
@@ -70,7 +70,7 @@ def deleteplayer():
         print('ERROR:', response.text)
 
 def resetall():
-    response = request.put(f'{SERVER}/users/reset', headers=HEADERS, verify=False)
+    response = requests.put(f'{SERVER}/users/reset', headers=HEADERS, verify=False)
 
     if response.status_code == 200:
         print('All user stats reset')
@@ -79,7 +79,7 @@ def resetall():
 
 def resetplayer():
     playerId = input('Player ID: ')
-    response = request.put(f'{SERVER}/user/{playerId}/reset', headers=HEADERS, verify=False)
+    response = requests.put(f'{SERVER}/user/{playerId}/reset', headers=HEADERS, verify=False)
 
     if response.status_code == 200:
         print(f'Player stats for {player} is reset')
