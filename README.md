@@ -28,7 +28,12 @@ npm i -g typescript ts-node ts-node-dev
 npm i
 ```
 
-Might need sudo for `npm i -g ...` on Linux
+If npm fails to install because of permissions you probably needs to configure the npm prefix since npm don't have permission to install packages into the default directory. We recommend to set the prefix instead of using `sudo`. I.e. create a folder in your home directory, or other directories with write permission: `~/.npm-global`. And set it as the prefix: `npm config set prefix '~/npm-global/`.
+
+After doing this, all `npm -g install` will install global packages into `~/.npm-global`.
+
+You can also set `~/.npm-global/bin` in your `$PATH`.
+
 
 # Run
 
