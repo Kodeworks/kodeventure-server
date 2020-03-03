@@ -56,12 +56,12 @@ export class StarterQuest extends Quest {
         // Schedule our periodic challenge to the Player
         const task = this.engine.scheduler.schedulePeriodic(async () => {
             try {
-                const postResult = await player.sendHttpPostRequest('hello-world', { msg: 'hello' })
+                const { postResult } = await player.sendHttpPostRequest('hello-world', { msg: 'hello' })
 
                 Log.debug(`${player} ${JSON.stringify(postResult)}`, SystemEvent.PLAYER_QUEST_RESPONSE)
 
                 // Check that we have the correct structure and type
-                const hasAnswer = postResult && postResult.answer && typeof postResult.answer === 'string'
+                const hasAnswer = postResult.answer && typeof postResult.answer === 'string'
 
                 // The validation here should be better ofc, but works for this example
                 if (hasAnswer && postResult.answer.toLowerCase() === 'world') {
