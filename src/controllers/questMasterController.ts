@@ -100,6 +100,8 @@ export class QuestMasterController {
                 const quest = this.getRandomStarterQuest(player)
 
                 if (quest) {
+                    player.unlockQuest(quest)
+
                     payload = {
                         'status': 200,
                         'msg': 'The questmaster has found some strange device underneath his circuitboards.'

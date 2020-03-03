@@ -64,6 +64,7 @@ export class UserController {
     public resetAllStats(req: Request, res: Response) {
         if (authorize(req, res)) {
             UserDatabaseModel.updateMany({}, { $set: { titles: [], loot: [], score: 0, activeQuests: [], completedQuests: [] } })
+            res.send()
         }
     }
 
@@ -76,6 +77,7 @@ export class UserController {
         if (authorize(req, res)) {
             const playerId = req.params.id
             UserDatabaseModel.updateOne({ _id: playerId }, { $set: { titles: [], loot: [], score: 0, activeQuests: [], completedQuests: [] } })
+            res.end()
         }
     }
 
@@ -87,6 +89,7 @@ export class UserController {
     public deleteAllUsers(req: Request, res: Response) {
         if (authorize(req, res)) {
             UserDatabaseModel.deleteMany({}, error => Log.error(`Error deleting users: ${error}`, SystemEvent.DB_DELETE_ERROR))
+            res.send()
         }
     }
 
@@ -99,6 +102,7 @@ export class UserController {
         if (authorize(req, res)) {
             const playerId = req.params.id
             UserDatabaseModel.deleteOne({ _id: playerId })
+            res.send()
         }
     }
 
