@@ -379,10 +379,12 @@ export class Player extends EventEmitter {
                 },
             });
             const json = await response.json();
+            const statusCode = response.status
+            return { postResult: json, statusCode }
             return json;
         } catch (error) {
             Log.debug(`Tried to GET from ${this}${route}, got: ${error.message}`, SystemEvent.PLAYER_QUEST_RESPONSE)
-            return null;
+            return { postResult: null, statusCode: null };
         }
     }
 
@@ -402,11 +404,12 @@ export class Player extends EventEmitter {
                 },
                 body: JSON.stringify(payload)
             });
-            const json = await response.json();
-            return json;
+            const statusCode = response.status
+            const json = await response.json()
+            return { postResult: json, statusCode }
         } catch (error) {
             Log.debug(`Tried to POST from ${this}${route}, got: ${error.message}`, SystemEvent.PLAYER_QUEST_RESPONSE)
-            return null;
+            return { postResult: null, statusCode: null };
         };
     }
 
@@ -426,11 +429,12 @@ export class Player extends EventEmitter {
                 },
                 body: JSON.stringify(payload)
             });
-            const json = await response.json();
-            return json;
+            const statusCode = response.status
+            const json = await response.json()
+            return { postResult: json, statusCode }
         } catch (error) {
             Log.debug(`Tried to PUT from ${this}${route}, got: ${error.message}`, SystemEvent.PLAYER_QUEST_RESPONSE)
-            return null;
+            return { postResult: null, statusCode: null };
         };
     }
 
