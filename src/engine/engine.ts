@@ -259,6 +259,8 @@ export class GameEngine extends EventEmitter {
         player.on(SystemEvent.PLAYER_TITLE, data => this.emit(SystemEvent.PLAYER_TITLE, data))
         player.on(SystemEvent.PLAYER_LOOT_OBTAINED, data => this.emit(SystemEvent.PLAYER_LOOT_OBTAINED, data))
         player.on(SystemEvent.PLAYER_LOOT_USED, data => this.emit(SystemEvent.PLAYER_LOOT_USED, data))
+        player.on(SystemEvent.PLAYER_QUEST_UNLOCKED, data => this.emit(SystemEvent.PLAYER_QUEST_UNLOCKED, data))
+        player.on(SystemEvent.PLAYER_QUEST_COMPLETED, data => this.emit(SystemEvent.PLAYER_QUEST_COMPLETED, data))
     }
 
     /**
@@ -266,7 +268,7 @@ export class GameEngine extends EventEmitter {
      */
     private async startPeriodicDatabaseBackup() {
         const persist = () => {
-            Log.debug('Persisting game state to database', 'engine')
+            Log.info('Persisting game state to database', 'engine')
 
             for (const player of this.players) {
                 player.save()
@@ -282,17 +284,9 @@ export class GameEngine extends EventEmitter {
      * @param data The player quest unlocked event data
      */
     private handlePlayerQuestUnlocked(data: IPlayerQuestUnlockedEvent) {
-        const quest = this.getQuest(data.quest.baseRoute)
+        data.player.notify(`You have unlocked ${data.quest}, a challenge awaits!`)
 
-        if (quest) {
-            Log.debug(`${data.player} unlocked ${quest}`, SystemEvent.PLAYER_QUEST_UNLOCKED)
-
-            data.player.notify(`You have unlocked ${quest}, a challenge awaits!`)
-
-            quest.emit(SystemEvent.PLAYER_QUEST_UNLOCKED, data)
-        } else {
-            Log.error(`Failed to find quest object for quest ${data.quest.baseRoute}`, SystemEvent.PLAYER_QUEST_UNLOCKED)
-        }
+        data.quest.unlock(data.player)
     }
 
     /**
@@ -307,6 +301,9 @@ export class GameEngine extends EventEmitter {
 
             // Send a game_message event to the player over the websocket connection
             player.notify(`Welcome back ${player.name}! May you fare better this time...`)
+            if (this.gameState === GameState.PAUSED) {
+                player.notify(`The game is currently paused, have some food and drink while we wait for Pepe to sort things out`)
+            }
 
             this.emit(SystemEvent.PLAYER_RECONNECTED, { player: player })
         } else {

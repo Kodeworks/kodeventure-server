@@ -1,4 +1,3 @@
-import { EventEmitter } from 'events'
 import { Request, Response } from 'express'
 
 import { GameEngine } from "../engine/engine"
@@ -116,16 +115,16 @@ export class Experience {
 /**
  * Base class for creating a Kodeventure quest
  */
-export abstract class Quest extends EventEmitter {
+export abstract class Quest {
     // The config parameters for the XP points given or lost in this quest
-    private xpConfig: IExperienceConfig
+    protected readonly xpConfig: IExperienceConfig
 
     // A reference to the game engine this quest is registered to
-    protected engine: GameEngine
+    protected readonly engine: GameEngine
     // The set of players that have unlocked this quest
-    protected players: Map<string, Player>
+    protected readonly players: Map<string, Player>
     // The XP registry for each player that has unlocked this quest
-    protected xp: Map<Player, Experience>
+    protected readonly xp: Map<Player, Experience>
 
     // The quest route serves as an identifier for the quest. If this quest is available for
     // the player, a HTTP GET to the baseRoute of this quest should return the description of
@@ -142,14 +141,10 @@ export abstract class Quest extends EventEmitter {
      * @param engine The game engine this quest is registered to
      */
     constructor(engine: GameEngine, xpConfig: IExperienceConfig) {
-        super()
-
         this.engine = engine
         this.players = new Map()
         this.xp = new Map()
         this.xpConfig = xpConfig
-
-        this.subscribeToGameEvents()
     }
 
     /**
@@ -170,11 +165,40 @@ export abstract class Quest extends EventEmitter {
         return this.players.has(player.userToken)
     }
 
+    
+    /**
+     * Unlock this quest for a player, triggering the handleNewPlayer method that subclasses must implement
+     * @param player The player to unlock
+     */
+    public unlock(player: Player) {
+        this.players.set(player.userToken, player)
+
+        // Create and set up an XP container for this player, so the quest can keep track of its state
+        const xpContainer = new Experience(
+            this.xpConfig.successXp,
+            this.xpConfig.failXp,
+            this.xpConfig.maxSuccess,
+            this.xpConfig.maxFail,
+            this.xpConfig.maxIterations
+        )
+
+        this.xp.set(player, xpContainer)
+
+        this.handleNewPlayer(player)
+    }
+
+    /**
+     * Get the short hand name of this quest (i.e the baseRoute)
+     */
+    public get name(): string {
+        return this.baseRoute
+    }
+
     /**
      * Text representation of this Quest object
      */
     public toString(): string {
-        return `${this.baseRoute} (${this.description})`
+        return `${this.name} (${this.description})`
     }
 
     /**
@@ -189,11 +213,11 @@ export abstract class Quest extends EventEmitter {
      * @param player A Player object.
      */
     protected completeForPlayer(player: Player) {
-        player.removeActiveQuest(this.baseRoute)
-
         const [ success, fail, total ] = this.xp.get(player).stats
 
-        player.notify(`Quest "${this.baseRoute}" complete. You scored ${success} correct, ${fail} incorrect out of ${total} challenges`)
+        const msg = `Quest "${this.name}" complete. You scored ${success} correct, ${fail} incorrect out of ${total} challenges`
+
+        player.completeQuest(this, msg)
     }
 
     /**
@@ -207,33 +231,5 @@ export abstract class Quest extends EventEmitter {
         if (!player || !this.hasAccess(player)) return null
 
         return player
-    }
-
-    /**
-     * Configure subscriptions to all relevant game events
-     */
-    private subscribeToGameEvents() {
-        this.on(SystemEvent.PLAYER_QUEST_UNLOCKED, (data: IPlayerQuestUnlockedEvent) => {
-            // Shouldn't happen
-            if (data.quest !== this) {
-                return Log.error(`${this} received player unlocked event for another quest: ${data.quest}`, SystemEvent.PLAYER_QUEST_UNLOCKED)
-            }
-
-            this.players.set(data.player.userToken, data.player)
-
-            data.player.addActiveQuest(this.baseRoute)
-
-            // Create and set up an XP container for this player, so the quest can keep track of its state
-            const xpContainer = new Experience(
-                this.xpConfig.successXp,
-                this.xpConfig.failXp,
-                this.xpConfig.maxSuccess,
-                this.xpConfig.maxFail,
-                this.xpConfig.maxIterations
-            )
-            this.xp.set(data.player, xpContainer)
-
-            this.handleNewPlayer(data.player)
-        })
     }
 }

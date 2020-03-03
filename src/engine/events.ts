@@ -26,6 +26,7 @@ export const enum SystemEvent {
     PLAYER_LOOT_OBTAINED = "player_loot_obtained",
     PLAYER_LOOT_USED = "player_loot_used",
     PLAYER_QUEST_UNLOCKED = "player_quest_unlocked",
+    PLAYER_QUEST_COMPLETED = "player_quest_completed",
     PLAYER_QUEST_REQUEST = "player_quest_request",
     PLAYER_QUEST_RESPONSE = "player_quest_response",
 
@@ -141,14 +142,31 @@ export interface IPlayerQuestUnlockedEvent extends IPlayerEvent {
 }
 
 /**
- * Event data structure for player quest request
+ * Event data structure for player quest unlocked
  */
-export interface IPlayerQuestRequestEvent extends IPlayerEvent {}
+export interface IPlayerQuestCompletedEvent extends IPlayerEvent {
+    quest: Quest
+}
+
+/**
+ * Event data structure for player quest request
+ * @param quest A reference to the quest object
+ * @param data The request data
+ */
+export interface IPlayerQuestRequestEvent extends IPlayerEvent {
+    quest: Quest,
+    data: any
+}
 
 /**
  * Event data structure for player quest response
+ * @param quest A reference to the quest object
+ * @param data The request data
  */
-export interface IPlayerQuestResponseEvent extends IPlayerEvent {}
+export interface IPlayerQuestResponseEvent extends IPlayerEvent {
+    quest: Quest,
+    data: any
+}
 
 /**
  * Event data structure for generic user specific error

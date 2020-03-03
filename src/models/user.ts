@@ -6,6 +6,7 @@ import WebSocket from 'ws'
 import { PLAYER_PORT } from '../config'
 import { SystemEvent, IPlayerConnectingEvent } from '../engine/events'
 import { Log } from '../logging'
+import { Quest } from './quest'
 
 /**
  * Mongoose User schema for MongoDB
@@ -17,7 +18,8 @@ const UserSchema: Schema = new Schema({
     score: { type: Number, required: true },
     titles: { type: [String], required: true },
     loot: { type: [String], required: true },
-    activeQuests: { type: [String], required: true }
+    activeQuests: { type: [String], required: true },
+    completedQuests: { type: [String], required: true }
 })
 
 /**
@@ -30,7 +32,8 @@ export interface IUser extends Document {
     score: number
     titles: string[]
     loot: string[],
-    activeQuests: string[]
+    activeQuests: string[],
+    completedQuests: string[]
 }
 
 /**
@@ -41,6 +44,7 @@ export interface IPublicUser {
     score: number,
     titles: string[],
     loot: string[]
+    completedQuests: number
 }
 
 /**
@@ -162,12 +166,41 @@ export class Player extends EventEmitter {
      * Add a quest to this player's acive quests. Used to track what is unlocked and not.
      * @param quest The baseRoute of a quest, i.e it's main identifier
      */
-    public addActiveQuest(quest: string) {
-        if (this.hasActiveQuest(quest)) {
-            return Log.warning(`${this} has already activated ${quest}`)
+    public unlockQuest(quest: Quest) {
+        if (this.hasActiveQuest(quest.baseRoute) || this.hasCompletedQuest(quest.baseRoute)) {
+            return Log.warning(`${this} has already unlocked or completed ${quest}`)
         }
 
-        this.quests.push(quest)
+        this.quests.push(quest.baseRoute)
+
+        Log.info(`${this} has unlocked ${quest.baseRoute}`)
+
+        this.emit(SystemEvent.PLAYER_QUEST_UNLOCKED, { player: this, quest: quest })
+    }
+
+    /**
+     * Remove a quest from this player's list of active quests
+     * @param quest The quest to complete
+     * @param msg An optional message to send to the player upon completion
+     */
+    public completeQuest(quest: Quest, msg?: string) {
+        const i = this.quests.indexOf(quest.baseRoute)
+
+        if (i < 0) {
+            return Log.error(`${this} has no active quest called "${quest}"`)
+        }
+
+        this.user.activeQuests.splice(i, 1)
+        this.user.completedQuests.push(quest.baseRoute)
+
+        // Send the completion message if we received one
+        if (msg) {
+            this.notify(msg)
+        }
+
+        Log.info(`${this} has completed ${quest.baseRoute}`)
+
+        this.emit(SystemEvent.PLAYER_QUEST_COMPLETED, { player: this, quest: quest })
     }
 
     /**
@@ -179,17 +212,11 @@ export class Player extends EventEmitter {
     }
 
     /**
-     * Remove a quest from this player's list of active quests
-     * @param loot The loot to use
+     * Check if this user has already completed the provided quest
+     * @param quest The quest baseRoute to check
      */
-    public removeActiveQuest(quest: string) {
-        const i = this.quests.indexOf(quest)
-
-        if (i < 0) {
-            return Log.error(`${this} has no active quest called "${quest}"`)
-        }
-
-        this.loot.splice(i, 1)
+    public hasCompletedQuest(quest: string) {
+        return this.user.completedQuests.indexOf(quest) >= 0
     }
 
     /**
@@ -278,7 +305,8 @@ export class Player extends EventEmitter {
             name: this.name,
             score: this.score,
             titles: this.titles,
-            loot: this.loot
+            loot: this.loot,
+            completedQuests: this.user.completedQuests.length
         }
     }
 
