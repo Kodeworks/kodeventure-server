@@ -29,7 +29,7 @@ export class Routes {
 
         this.get('/users', this.userController.getUsers)
         this.put('/users/reset', this.userController.resetAllStats)
-        this.delete('/users/delete', this.userController.deleteAllUsers)
+        this.delete('/users', this.userController.deleteAllUsers)
 
 
         // Certificate creation endpoint
