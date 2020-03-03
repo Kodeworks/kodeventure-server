@@ -178,6 +178,13 @@ export abstract class Quest extends EventEmitter {
     }
 
     /**
+     * Get the XP configuration for this quest
+     */
+    public getXpConfig(): IExperienceConfig {
+        return this.xpConfig
+    }
+
+    /**
      * Handler method that will be invoked when a new player has unlocked this quest.
      * When this method is invoked, the player is already registered in this.players
      * @param player A Player object
