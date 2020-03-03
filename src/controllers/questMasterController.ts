@@ -92,7 +92,7 @@ export class QuestMasterController {
             if (!player) {
                 payload = {
                     'status': 500,
-                    'error': 'The questmaster suffers from dementia and cannot find any more starter quests!'
+                    'error': `The questmaster cannot find a player with the token "${req.headers.authorization}"`
                 }
 
                 Log.warning(`QuestMaster received request for unknown token "${req.headers.authorization}"`, 'qm')
