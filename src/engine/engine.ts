@@ -248,15 +248,28 @@ export class GameEngine extends EventEmitter {
 
             this.emit(SystemEvent.PLAYER_CONNECTED, { player: player })
 
-            // Signal quest unlock for all quests the player currently has active
-            for (const quest of player.quests) {
-                const q = this.getQuest(quest)
+            const unlockActiveQuests = () => {
+                // Signal quest unlock for all quests the player currently has active
+                for (const quest of player.quests) {
+                    const q = this.getQuest(quest)
 
-                if (q) {
-                    this.emit(SystemEvent.PLAYER_QUEST_UNLOCKED, { player: player, quest: q })
-                } else {
-                    Log.error(`Failed to find quest object for "${quest}"`, 'engine')
+                    if (q) {
+                        this.emit(SystemEvent.PLAYER_QUEST_UNLOCKED, { player, quest: q })
+                    } else {
+                        Log.error(`Failed to find quest object for "${quest}"`, 'engine')
+                    }
                 }
+            }
+
+            // Unlock based on game state, aka only if not ended, and if stopped, hook into the game started event
+            switch (this.state) {
+                case GameState.STOPPED:
+                    this.on(SystemEvent.GAME_STARTED, () => unlockActiveQuests())
+                    break
+                case GameState.RUNNING:
+                case GameState.PAUSED:
+                    unlockActiveQuests()
+                    break
             }
         } catch (e) {
             Log.error(`Failed to register player ${player}: ${e.message}`, SystemEvent.PLAYER_CONNECTED)
