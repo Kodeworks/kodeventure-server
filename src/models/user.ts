@@ -164,16 +164,16 @@ export class Player extends EventEmitter {
 
     /**
      * Add a quest to this player's acive quests. Used to track what is unlocked and not.
-     * @param quest The baseRoute of a quest, i.e it's main identifier
+     * @param quest The name of a quest, i.e it's main identifier
      */
     public unlockQuest(quest: Quest) {
-        if (this.hasActiveQuest(quest.baseRoute) || this.hasCompletedQuest(quest.baseRoute)) {
-            return Log.warning(`${this} has already unlocked or completed ${quest}`)
+        if (this.hasActiveQuest(quest.name) || this.hasCompletedQuest(quest.name)) {
+            return Log.warning(`${this} has already unlocked or completed ${quest}. Ignoring.`)
         }
 
-        this.quests.push(quest.baseRoute)
+        this.quests.push(quest.name)
 
-        Log.info(`${this} has unlocked ${quest.baseRoute}`)
+        Log.info(`${this} has unlocked ${quest.name}`)
 
         this.emit(SystemEvent.PLAYER_QUEST_UNLOCKED, { player: this, quest: quest })
     }
@@ -184,28 +184,28 @@ export class Player extends EventEmitter {
      * @param msg An optional message to send to the player upon completion
      */
     public completeQuest(quest: Quest, msg?: string) {
-        const i = this.quests.indexOf(quest.baseRoute)
+        const i = this.quests.indexOf(quest.name)
 
         if (i < 0) {
-            return Log.error(`${this} has no active quest called "${quest}"`)
+            return Log.error(`${this} has no active quest called "${quest}". Ignoring.`)
         }
 
         this.user.activeQuests.splice(i, 1)
-        this.user.completedQuests.push(quest.baseRoute)
+        this.user.completedQuests.push(quest.name)
 
         // Send the completion message if we received one
         if (msg) {
             this.notify(msg)
         }
 
-        Log.info(`${this} has completed ${quest.baseRoute}`)
+        Log.info(`${this} has completed ${quest.name}`)
 
         this.emit(SystemEvent.PLAYER_QUEST_COMPLETED, { player: this, quest: quest })
     }
 
     /**
      * Check if this user current has the provided quest activated
-     * @param quest The quest baseRoute to check
+     * @param quest The quest name to check
      */
     public hasActiveQuest(quest: string) {
         return this.quests.indexOf(quest) >= 0
@@ -213,7 +213,7 @@ export class Player extends EventEmitter {
 
     /**
      * Check if this user has already completed the provided quest
-     * @param quest The quest baseRoute to check
+     * @param quest The quest name to check
      */
     public hasCompletedQuest(quest: string) {
         return this.user.completedQuests.indexOf(quest) >= 0

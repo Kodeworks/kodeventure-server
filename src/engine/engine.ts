@@ -2,6 +2,7 @@ import { EventEmitter } from 'events'
 import { Request, Response } from 'express'
 
 import { GameController } from '../controllers/gameController'
+import { QuestMasterController } from '../controllers/questMasterController'
 import { SystemEvent, IPlayerError, IPlayerConnectingEvent, IPlayerQuestUnlockedEvent } from './events'
 import { Log } from '../logging'
 import { Quest } from "../models/quest"
@@ -31,6 +32,7 @@ export class GameEngine extends EventEmitter {
     private gameState: GameState
     private routes: Routes
     private api: GameController
+    private questMaster: QuestMasterController
     private registeredPlayers: Map<string, Player>
     private quests: Map<string, Quest>
 
@@ -45,6 +47,7 @@ export class GameEngine extends EventEmitter {
         this.gameState = GameState.STOPPED
         this.routes = routes
         this.api = new GameController(this)
+        this.questMaster = new QuestMasterController(this)
         this.quests = new Map()
         this.registeredPlayers = new Map()
         this.scheduler = new Scheduler(this)
@@ -72,6 +75,13 @@ export class GameEngine extends EventEmitter {
     }
 
     /**
+     * Get an array of all the registered starter quests
+     */
+    public getStarterQuests(): Quest[] {
+        return Array.from(this.quests.values()).filter(q => q.starterQuest)
+    }
+
+    /**
      * Start the game, this can only be done from a STOPPED state
      */
     public start() {
@@ -82,7 +92,7 @@ export class GameEngine extends EventEmitter {
         this.gameState = GameState.RUNNING
 
         this.emit(SystemEvent.GAME_STARTED, {
-            msg: 'You feel a tingling sensation in your circuitry... Ask /quest/questmaster for some advice!'
+            msg: 'You feel a tingling sensation in your circuitry... Let the games begin!'
         })
 
         Log.info(`Started ${this}`, 'engine')
@@ -207,6 +217,9 @@ export class GameEngine extends EventEmitter {
         this.routes.post('/game/pause', this.api.pause.bind(this.api))
         this.routes.post('/game/unpause', this.api.unpause.bind(this.api))
         this.routes.post('/game/stop', this.api.stop.bind(this.api))
+
+        // QuestMaster
+        this.routes.get('/questmaster', this.questMaster.request.bind(this.questMaster))
 
         // New player handling
         this.on(SystemEvent.PLAYER_CONNECTING, this.handlePlayerConnecting.bind(this))

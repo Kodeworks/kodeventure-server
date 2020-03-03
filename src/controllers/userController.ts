@@ -44,7 +44,7 @@ export class UserController {
      * @param res Express.js response object
      */
     public addNewUser(req: Request, res: Response) {
-        const user = { ...req.body, score: 0, titles: [], loot: [] }
+        const user = { ...req.body, score: 0, titles: [], loot: [], activeQuests: [], completedQuests: [] }
         let newUser = new UserDatabaseModel(user)
 
         newUser.save((error, user) => {
@@ -63,7 +63,7 @@ export class UserController {
      */
     public resetAllStats(req: Request, res: Response) {
         if (authorize(req, res)) {
-            UserDatabaseModel.updateMany({}, { $set: { titles: [], loot: [], score: 0 } })
+            UserDatabaseModel.updateMany({}, { $set: { titles: [], loot: [], score: 0, activeQuests: [], completedQuests: [] } })
         }
     }
 
@@ -75,7 +75,7 @@ export class UserController {
     public resetPlayerStats(req: Request, res: Response) {
         if (authorize(req, res)) {
             const playerId = req.params.id
-            UserDatabaseModel.updateOne({ _id: playerId }, { $set: { titles: [], loot: [], score: 0 } })
+            UserDatabaseModel.updateOne({ _id: playerId }, { $set: { titles: [], loot: [], score: 0, activeQuests: [], completedQuests: [] } })
         }
     }
 

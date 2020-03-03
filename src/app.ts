@@ -7,6 +7,8 @@ import mongoose from 'mongoose'
 import path from 'path'
 
 import { GameEngine } from './engine/engine'
+import { SystemEvent } from './engine/events'
+import { StarterQuest } from './engine/quest'
 import { Log } from './logging'
 import quests from './quests'
 import { Routes } from './routes'
@@ -59,9 +61,28 @@ export default class Kodeventure {
     }
 
     /**
+     * Load the starter quest.
      * Load all quests defined in index.ts in the quests package
      */
     private loadQuests() {
+        Log.info('Loading quests', 'server')
+
+        // You can change what starter quest is active here if you like, for development purposes
+        const starterQuest = new StarterQuest(this.engine)
+
+        this.engine.registerQuest(starterQuest)
+
+        // Upon game start, schedule unlocking the starter quest for all players
+        this.engine.on(SystemEvent.GAME_STARTED, data => {
+            // Unlock starter quest after 5 seconds
+            this.engine.scheduler.scheduleAfter(() => {
+                for (const player of this.engine.players) {
+                    player.unlockQuest(starterQuest)
+                }
+            }, 5000)
+        })
+
+        // Load all quests from the quests package (submodule)
         for (const quest of quests) {
             this.engine.registerQuest(new quest(this.engine))
         }
