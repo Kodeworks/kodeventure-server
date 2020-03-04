@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 
-import { GameEngine } from '../engine/engine'
+import { GameEngine, GameState } from '../engine/engine'
 import { Log } from '../logging'
 import { Player } from '../models/user'
 import { Quest } from '../models/quest'
@@ -86,7 +86,13 @@ export class QuestMasterController {
             const ip = req.connection.remoteAddress
 
             Log.debug(`QuestMaster received request without Authorization header from ${ip}`, 'qm')
+        } else if (this.engine.state !== GameState.RUNNING) {
+            payload = {
+                'status': 403,
+                'error': 'The questmaster is sleeping, as the game is not currently running. Do not disturb.'
+            }
         } else {
+
             const player = this.engine.getPlayer(req.headers.authorization)
 
             if (!player) {

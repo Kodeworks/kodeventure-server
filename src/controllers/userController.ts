@@ -50,9 +50,11 @@ export class UserController {
         newUser.save((error, user) => {
             if (error) {
                 res.send(error)
-            }
+            } else {
+                res.json(user)
 
-            res.json(user)
+                Log.info(`Added new user "${newUser.name}"`, 'db')
+            }
         })
     }
 
@@ -63,8 +65,14 @@ export class UserController {
      */
     public resetAllStats(req: Request, res: Response) {
         if (authorize(req, res)) {
-            UserDatabaseModel.update({}, {$set: { titles: [], loot: [], score: 0, activeQuests: [], completedQuests: [] } }, { multi: true })
-            res.send()
+            UserDatabaseModel.updateMany({}, {$set: { titles: [], loot: [], score: 0, activeQuests: [], completedQuests: [] } }, (err, raw) => {
+                if (err) res.send(err.message)
+                else {
+                    res.send()
+
+                    Log.info('Reset all users', 'db')
+                }
+            })
         }
     }
 
@@ -76,8 +84,14 @@ export class UserController {
     public resetPlayerStats(req: Request, res: Response) {
         if (authorize(req, res)) {
             const playerId = req.params.id
-            UserDatabaseModel.update({ _id: playerId }, { $set: { titles: [], loot: [], score: 0, activeQuests: [], completedQuests: [] } })
-            res.send()
+            UserDatabaseModel.update({ _id: playerId }, { $set: { titles: [], loot: [], score: 0, activeQuests: [], completedQuests: [] } }, (err, raw) => {
+                if (err) res.send(err.message)
+                else {
+                    res.send()
+
+                    Log.info(`Reset user "${playerId}"`, 'db')
+                }
+            })
         }
     }
 
@@ -90,8 +104,12 @@ export class UserController {
         if (authorize(req, res)) {
             UserDatabaseModel.deleteMany({}, error => {
                 if (error) Log.error(`Error deleting users: ${error}`, SystemEvent.DB_DELETE_ERROR)
+                else {
+                    res.send()
+
+                    Log.info('Deleted all users')
+                }
             })
-            res.send()
         }
     }
 
@@ -103,8 +121,14 @@ export class UserController {
     public deleteUser(req: Request, res: Response) {
         if (authorize(req, res)) {
             const playerId = req.params.id
-            UserDatabaseModel.deleteOne({ _id: playerId })
-            res.send()
+            UserDatabaseModel.deleteOne({ _id: playerId }, err => {
+                if (err) res.send(err.message)
+                else {
+                    res.send()
+
+                    Log.info(`Deleted user "${playerId}"`, 'db')
+                }
+            })
         }
     }
 
