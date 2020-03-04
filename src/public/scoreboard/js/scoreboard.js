@@ -176,6 +176,6 @@ function KillFeed(feed) {
  * @param {Number} playerCount Number of players currenltly registered in the game
  */
 function PlayerCount(playerCount) {
-  return e('div', { className: 'playerCount' }, `Total players in the hall of fame: ${playerCount}`)
+  return e('div', { className: 'playerCount' }, `Total players: ${playerCount}`)
 }
 
