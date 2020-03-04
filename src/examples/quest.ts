@@ -29,20 +29,23 @@ import { IQuestRoute, Quest } from '../models/quest'
 export class ExampleQuest extends Quest {
     // This is a starter quest, meaning it can be unlocked via the questmaster
     public starterQuest: boolean = true
+    // The minimum score required to unlock this quest from the questmaster
+    public minimumScoreRequirement = 0
     // Base route will be prefixed to all IQuestRoutes in this.routes (without leading /)
     public baseRoute: string = 'example-quest'
     // Description will be shown when requesting HTTP GET to the baseRoute
     public description: string = 'Static computer science trivia'
 
-    private interval: number = 3000 // Challenge every 3 seconds
+    // Challenge every 25 seconds
+    private interval: number = 25000
 
     constructor(engine: GameEngine) {
         super(engine, {
-            successXp: 4,
-            failXp: -2,
-            maxSuccess: 10,
-            maxFail: 5,
-            maxIterations: 20
+            successXp: 2,
+            failXp: -1,
+            maxSuccess: 15,
+            maxFail: 15,
+            maxIterations: 40
         })
     }
 
@@ -78,13 +81,9 @@ export class ExampleQuest extends Quest {
         // Schedule our periodic challenge to the Player
         const task = this.engine.scheduler.schedulePeriodic(async () => {
             try {
-                const postResult = await player.sendHttpPostRequest(
-                    'my-simple-quest',
-                    { msg: question }
-                )
+                const { postResult } = await player.sendHttpPostRequest(this.name, { msg: question })
 
-                // The validation here should be better ofc, but works for this example
-                if (postResult && postResult.answer && postResult.answer.toLowerCase() === answer) {
+                if (postResult && typeof postResult.answer === "string" && postResult.answer.toLowerCase() === answer) {
                     player.addScore(xp.gain())
                 } else {
                     player.addScore(xp.lose())

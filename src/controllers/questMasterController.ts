@@ -47,21 +47,16 @@ export class QuestMasterController {
 
             fisherYatesShuffle(starterQuests)
 
-            let q = starterQuests.pop()
-
-            if (!q) {
-                Log.warning(`Player ${player} exhausted all starter quests`, 'qm')
-
-                return null
+            // Find a quest the player has not yet completed or already has active and has enough score to to unlock
+            for (const quest of starterQuests) {
+                if (quest.hasAccess(player)) {
+                    return quest
+                }
             }
 
-            // Find a quest the player has not yet completed or already has active
-            while (player.hasCompletedQuest(q.name) || player.hasActiveQuest(q.name)) {
-                if (!q) break
-                q = starterQuests.pop()
-            }
+            Log.warning(`Player ${player} exhausted all starter quests`, 'qm')
 
-            return q
+            return null
         } catch (e) {
             Log.error(`Unhandled error: ${e}`, 'qm')
         }

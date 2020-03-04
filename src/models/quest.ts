@@ -126,15 +126,17 @@ export abstract class Quest {
     // The XP registry for each player that has unlocked this quest
     protected readonly xp: Map<Player, Experience>
 
+    // The minimum score requirement needed to unlock this quest.
+    public readonly minimumScoreRequirement: number = 0
+    // A starter quest can be unlocked from the questmaster endpoint
+    public readonly abstract starterQuest: boolean
     // The quest route serves as an identifier for the quest. If this quest is available for
     // the player, a HTTP GET to the baseRoute of this quest should return the description of
     // this quest. Without a leading /
-    public abstract baseRoute: string
+    public readonly abstract baseRoute: string
     // The description of this quest, or some hints, or just some witty information if the user
     // should figure it out for themselves.
-    public abstract description: string
-    // Whether or not this is a starter quest, and could be given from the questmaster endpoint
-    public abstract starterQuest: boolean
+    public readonly abstract description: string
 
     /**
      * Construct a quest object
@@ -154,15 +156,20 @@ export abstract class Quest {
      * to the game engine, and updating the web server with
      * routes. The baseRoute will be prefixed to each route in
      * the returned array when registered in the web server.
+     * i.e baseRoute/sample-custom-route
      */
     public abstract get routes(): IQuestRoute[]
 
     /**
-     * Check whether or not a player has access to this quest.
+     * Check whether or not a player has access to unlock this quest, by checking if its already
+     * completed, currently active, or if there is a minimum score requirement that needs to be met.
+     * Negative score counts as 0.
      * @param player A Player object
      */
     public hasAccess(player: Player): boolean {
-        return this.players.has(player.userToken)
+        const score = player.score < 0 ? 0 : player.score
+
+        return !player.hasActiveQuest(this.name) && !player.hasCompletedQuest(this.name) && score >= this.minimumScoreRequirement
     }
 
     
@@ -228,7 +235,7 @@ export abstract class Quest {
     protected authorize(req: Request): Player | null {
         const player = this.engine.getPlayer(req.headers.authorization)
 
-        if (!player || !this.hasAccess(player)) return null
+        if (!player || !this.players.has(player.userToken)) return null
 
         return player
     }

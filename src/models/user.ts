@@ -117,6 +117,8 @@ export class Player extends EventEmitter {
     public addTitle(title: string) {
         this.user.titles.push(title)
 
+        this.notify(`You earned the title: ${title}`)
+
         this.emit(SystemEvent.PLAYER_TITLE, { player: this, title: title })
     }
 
@@ -133,6 +135,8 @@ export class Player extends EventEmitter {
      */
     public addLoot(loot: string) {
         this.loot.push(loot)
+
+        this.notify(`You obtained some shiny loot: ${loot}`)
 
         this.emit(SystemEvent.PLAYER_LOOT_OBTAINED, { player: this, loot: loot })
     }
@@ -158,6 +162,8 @@ export class Player extends EventEmitter {
         }
 
         this.loot.splice(i, 1)
+
+        this.notify(`Your item "${loot}" was claimed`)
 
         this.emit(SystemEvent.PLAYER_LOOT_USED, { player: this, loot: loot })
     }

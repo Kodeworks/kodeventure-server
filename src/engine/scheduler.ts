@@ -137,6 +137,7 @@ export class Scheduler {
 
             if (this.state === SchedulerState.RUNNING) {
                 this.taskTimers.set(taskId, setInterval(task, interval, ...params))
+                task(...params)
             } else {
                 Log.debug(`Queued task ${taskId} to run every ${interval} ms with ${params.length} params, as scheduler is paused`, 'scheduler')
             }
