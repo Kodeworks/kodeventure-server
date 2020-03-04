@@ -1,5 +1,6 @@
 import { EventEmitter } from 'events'
 import fetch from 'node-fetch'
+import AbortController from 'abort-controller';
 import mongoose, { Document, Schema } from 'mongoose'
 import WebSocket from 'ws'
 
@@ -373,24 +374,33 @@ export class Player extends EventEmitter {
     /**
      * Send a HTTP GET request
      * @param route The route to GET.
+     * @param requestTimeoutMs The request timeout in milliseconds.
      */
-    public sendHttpGetRequest = async (route: string) => {
-        const url = `https://${this.ip}:${PLAYER_PORT}/${route}`;
+    public sendHttpGetRequest = async (route: string, requestTimeoutMs = 3000) => {
+        const url = `https://${this.ip}:${PLAYER_PORT}/${route}`
+
+        const controller = new AbortController()
+        const timeout = setTimeout(
+            () => { controller.abort() },
+            requestTimeoutMs,
+        )
         try {
             const response = await fetch(url, {
                 method: 'GET',
+                signal: controller.signal,
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': this.serverToken
                 },
             });
-            const json = await response.json();
+            const json = await response.json()
             const statusCode = response.status
             return { postResult: json, statusCode }
-            return json;
         } catch (error) {
             Log.debug(`Tried to GET from ${this}${route}, got: ${error.message}`, SystemEvent.PLAYER_QUEST_RESPONSE)
             return { postResult: null, statusCode: null };
+        } finally {
+            clearTimeout(timeout)
         }
     }
 
@@ -398,12 +408,21 @@ export class Player extends EventEmitter {
      * Send a HTTP POST request
      * @param route The route to POST to.
      * @param payload The object that will be posted.
+     * @param requestTimeoutMs The request timeout in milliseconds.
      */
-    public sendHttpPostRequest = async (route: string, payload: object) => {
-        const url = `https://${this.ip}:${PLAYER_PORT}/${route}`;
+    public sendHttpPostRequest = async (route: string, payload: object, requestTimeoutMs = 3000) => {
+        const url = `https://${this.ip}:${PLAYER_PORT}/${route}`
+
+        const controller = new AbortController()
+        const timeout = setTimeout(
+            () => { controller.abort() },
+            requestTimeoutMs,
+        )
+
         try {
             const response = await fetch(url, {
                 method: 'POST',
+                signal: controller.signal,
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': this.serverToken
@@ -416,6 +435,8 @@ export class Player extends EventEmitter {
         } catch (error) {
             Log.debug(`Tried to POST from ${this}${route}, got: ${error.message}`, SystemEvent.PLAYER_QUEST_RESPONSE)
             return { postResult: null, statusCode: null };
+        } finally {
+            clearTimeout(timeout);
         };
     }
 
@@ -423,12 +444,21 @@ export class Player extends EventEmitter {
      * Send a HTTP PUT request
      * @param route The route to PUT to.
      * @param payload The object that will be posted.
+     * @param requestTimeoutMs The request timeout in milliseconds.
      */
-    public sendHttpPutRequest = async (route: string, payload: object) => {
+    public sendHttpPutRequest = async (route: string, payload: object, requestTimeoutMs = 3000) => {
         const url = `https://${this.ip}:${PLAYER_PORT}/${route}`;
+
+        const controller = new AbortController();
+        const timeout = setTimeout(
+            () => { controller.abort(); },
+            requestTimeoutMs,
+        );
+
         try {
             const response = await fetch(url, {
                 method: 'PUT',
+                signal: controller.signal,
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': this.serverToken
@@ -441,6 +471,8 @@ export class Player extends EventEmitter {
         } catch (error) {
             Log.debug(`Tried to PUT from ${this}${route}, got: ${error.message}`, SystemEvent.PLAYER_QUEST_RESPONSE)
             return { postResult: null, statusCode: null };
+        } finally {
+            clearTimeout(timeout);
         };
     }
 
