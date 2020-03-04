@@ -10,7 +10,7 @@ function Scoreboard() {
     const ws = new WebSocket(`wss://${location.host}/scoreboard/ws`)
     ws.onopen = handleConnected
     ws.onmessage = receiveMessage
-
+    ws.onclose = handleDisconnected
   }, [])
 
 
@@ -24,7 +24,7 @@ function Scoreboard() {
     const message = e('span', { className: `message-type--${options.type}`}, newMessage)
 
     setKillFeed(killFeed => {
-      return [...killFeed.slice(0, 14), message]
+      return [message, ...killFeed.slice(0, 14)]
     })
   }
 
@@ -105,6 +105,10 @@ function Scoreboard() {
         updateKillFeed(`${data.player.name} used ${data.loot}`)
         break
 
+      case 'player_quest_completed':
+        updateKillFeed(`${data.player.name} has completed ${data.player.completedQuests} quests`, { type: 'playerQuestCompleted' })
+        break
+
       case 'game_started':
         updateKillFeed(`Game started!`, { type: 'gameStarted' })
         break
@@ -130,7 +134,14 @@ function Scoreboard() {
    * Scoreboard connected handler
    */
   function handleConnected() {
-    updateKillFeed(`Welcome to the hall of fame!`, { type: 'scoreboardConnected' })
+    updateKillFeed(`Connected to the hall of fame!`, { type: 'scoreboardConnected' })
+  }
+
+  /**
+   * Scoreboard disconnect handler
+   */
+  function handleDisconnected() {
+    updateKillFeed(`Disconnected from the hall of fame :(`, { type: `gameEnded` })
   }
 
 
@@ -167,7 +178,7 @@ function PlayerList(players) {
 function KillFeed(feed) {
   return e('div', { className: 'kill-feed' },
     e('h2', { className: 'kill-feed-header' }, 'Last events'),
-    e('ul', { className: 'kill-feed-list' }, feed.reverse().map((msg, index) => e('li', null, msg)))
+    e('ul', { className: 'kill-feed-list' }, feed.map((msg, index) => e('li', null, msg)))
   )
 }
 

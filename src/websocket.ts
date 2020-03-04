@@ -76,6 +76,7 @@ export class WebSocketHandler {
     this.engine.on(SystemEvent.PLAYER_TITLE, data => this.broadcastToScoreBoard(SystemEvent.PLAYER_TITLE, data))
     this.engine.on(SystemEvent.PLAYER_LOOT_OBTAINED, data => this.broadcastToScoreBoard(SystemEvent.PLAYER_LOOT_OBTAINED, data))
     this.engine.on(SystemEvent.PLAYER_LOOT_USED, data => this.broadcastToScoreBoard(SystemEvent.PLAYER_LOOT_USED, data))
+    this.engine.on(SystemEvent.PLAYER_QUEST_COMPLETED, data => this.broadcastToScoreBoard(SystemEvent.PLAYER_QUEST_COMPLETED, data))
 
     // Subscribe to relevant game events that should be broadcast to all players
     this.engine.on(SystemEvent.GAME_STARTED, data => {
@@ -125,6 +126,10 @@ export class WebSocketHandler {
     // Make sure we strip the player of private information before broadcasting
     if (data.player) {
       data.player = data.player.sanitize()
+    }
+    // Make sure we only send quest name
+    if (data.quest) {
+      data.quest = data.quest.name
     }
 
     const payload = JSON.stringify({ type: event, data: data })

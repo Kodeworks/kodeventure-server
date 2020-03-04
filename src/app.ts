@@ -29,7 +29,7 @@ export default class Kodeventure {
     /**
      * Construct a Kodeventure instance
      */
-    constructor() {
+    constructor(simulation: boolean = false) {
         // Express app and MongoDB
         this.webapp = express()
         this.config()
@@ -47,6 +47,9 @@ export default class Kodeventure {
         this.loadQuests()
 
         Log.debug(`Constructed Kodeventure`, 'server')
+
+        // Start simulation if stress testing
+        if (simulation) this.engine.simulate(20)
     }
 
     /**

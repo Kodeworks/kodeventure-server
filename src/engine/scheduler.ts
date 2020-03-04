@@ -109,7 +109,14 @@ export class Scheduler {
             const taskId = this.registerTask(TaskType.TIMEOUT, task, params, delay)
 
             if (this.state === SchedulerState.RUNNING) {
-                this.taskTimers.set(taskId, setTimeout(task, delay, ...params))
+                // Since this is a non-periodic task, we need to clear it from the tasks list when it is completed
+                const selfRemovingTask = () => {
+                    task(...params)
+                    this.tasks.delete(taskId)
+                    this.taskTimers.delete(taskId)
+                }
+
+                this.taskTimers.set(taskId, setTimeout(selfRemovingTask, delay))
             } else {
                 Log.debug(`Queued task ${taskId} to run after ${delay} ms with ${params.length} params, as scheduler is paused`, 'scheduler')
             }
@@ -238,7 +245,14 @@ export class Scheduler {
                     } else if (task.type === TaskType.PERIODIC) {
                         this.taskTimers.set(taskId, setInterval(task.task, task.timeout, ...task.params))
                     } else if (task.type === TaskType.TIMEOUT) {
-                        this.taskTimers.set(taskId, setTimeout(task.task, task.timeout, ...task.params))
+                        // Since this is a non-periodic task, we need to clear it from the tasks list when it is completed
+                        const selfRemovingTask = () => {
+                            task.task(...task.params)
+                            this.tasks.delete(taskId)
+                            this.taskTimers.delete(taskId)
+                        }
+
+                        this.taskTimers.set(taskId, setTimeout(selfRemovingTask, task.timeout))
                     }
                 }, jitter)
 

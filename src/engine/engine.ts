@@ -6,7 +6,7 @@ import { QuestMasterController } from '../controllers/questMasterController'
 import { SystemEvent, IPlayerError, IPlayerConnectingEvent, IPlayerQuestUnlockedEvent } from './events'
 import { Log } from '../logging'
 import { Quest } from "../models/quest"
-import { Player } from "../models/user"
+import { Player, UserDatabaseModel } from "../models/user"
 import { Routes } from '../routes'
 import { Scheduler } from './scheduler'
 
@@ -348,5 +348,72 @@ export class GameEngine extends EventEmitter {
                 Log.error(`${payload.msg} (connection attempt: ${source})`, SystemEvent.PLAYER_CONNECTING)
             }
         }
+    }
+
+    /**
+     * Starts a full system simulation with N concurrent players that unlocks one starter quest each.
+     * WARNING: WILL PURGE THE DATABASE
+     */
+    public async simulate(numPlayers: number) {
+        const users = []
+
+        Log.info(`Starting simulation with ${numPlayers} players`)
+
+        Log.info('Purging database')
+        await UserDatabaseModel.deleteMany({}, error => {
+            if (error) Log.error(`Error deleting users: ${error}`)
+        })
+
+        // Update the database by cleaning old players and inserting new
+        for (let i = 1; i < numPlayers + 1; i++) {
+            users.push({
+                name: `Robot Player ${i}`,
+                token: `token_${i}`,
+                server_token: `server_token_${i}`,
+                score: 0,
+                titles: [] as string[],
+                loot: [] as string[],
+                activeQuests: [] as string[],
+                completedQuests: [] as string[]
+            })
+        }
+
+        Log.info('Populating database')
+        await UserDatabaseModel.insertMany(users, (err, data) => { if (err) Log.error(err) })
+
+        Log.info('Simulating player connections')
+        for (const user of users) {
+            const playerConnectingEvent: any = {
+                token: user.token,
+                // Mock the used ws methods
+                ws: {
+                    send: (...args: any[]): void => {},
+                    on: (...args: any[]): void => {},
+                    close: (...args: any[]): void => {}
+                },
+                ip: '127.0.0.1',
+                port: 10000
+            }
+
+            await this.handlePlayerConnecting(playerConnectingEvent)
+        }
+
+        const simulator = () => {
+            let jitter = Math.random() * 2000
+
+            for (const player of this.players) {
+                const quest = this.questMaster.getRandomStarterQuest(player)
+
+                this.scheduler.scheduleAfter(() => quest.unlock(player), jitter)
+
+                jitter += Math.random() * 2000
+            }
+        }
+
+        Log.info('Starting game in 10 seconds')
+        this.scheduler.scheduleAfter(() => this.start(), 10000)
+
+        Log.info('Simulating quest unlocks in 20 seconds')
+        this.scheduler.scheduleAfter(simulator, 20000)
     }
 }
