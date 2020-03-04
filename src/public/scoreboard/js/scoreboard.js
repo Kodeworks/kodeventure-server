@@ -98,7 +98,7 @@ function Scoreboard() {
         break
 
       case 'player_loot_obtained':
-        updateKillFeed(`${data.player.name} optained ${data.loot}`)
+        updateKillFeed(`${data.player.name} obtained: ${data.loot}`)
         break
 
       case 'player_loot_used':
@@ -130,7 +130,7 @@ function Scoreboard() {
    * Scoreboard connected handler
    */
   function handleConnected() {
-    updateKillFeed(`We're online! Welcome to the hall of fame!"`, { type: 'scoreboardConnected' })
+    updateKillFeed(`Welcome to the hall of fame!`, { type: 'scoreboardConnected' })
   }
 
 
@@ -167,7 +167,7 @@ function PlayerList(players) {
 function KillFeed(feed) {
   return e('div', { className: 'kill-feed' },
     e('h2', { className: 'kill-feed-header' }, 'Last events'),
-    e('ul', { className: 'kill-feed-list' }, feed.map((msg, index) => e('li', null, msg)))
+    e('ul', { className: 'kill-feed-list' }, feed.reverse().map((msg, index) => e('li', null, msg)))
   )
 }
 

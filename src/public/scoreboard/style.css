@@ -51,8 +51,7 @@
 /* Message types
 -----------------------------------------------------------------------------*/
 .message-type--gameStarted,
-.message-type--gameUnpaused,
-.message-type--scoreboardConnected {
+.message-type--gameUnpaused {
   color: #1ec202;
 }
 
