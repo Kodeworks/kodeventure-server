@@ -1,5 +1,8 @@
 import chalk from 'chalk'
 
+import { LOG_LEVEL } from './config'
+
+
 export enum LogLevel {
     DEBUG = 0,
     INFO = 10,
@@ -7,8 +10,9 @@ export enum LogLevel {
     ERROR = 30,
 }
 
+
 export class Log {
-    public static level: LogLevel = LogLevel.DEBUG
+    public static level: LogLevel = LOG_LEVEL
 
     private static prefix(level: LogLevel, type?: string): string {
         const timestamp = chalk.gray(new Date().toISOString().slice(11, 23))

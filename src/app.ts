@@ -7,6 +7,7 @@ import mongoose from 'mongoose'
 import path from 'path'
 
 import { GameEngine } from './engine/engine'
+import { SIMULATION_TOTAL_PLAYERS, SIMULATION_QUESTS_PER_PLAYER, LOG_LEVEL } from './config'
 import { SystemEvent } from './engine/events'
 import { StarterQuest } from './engine/quest'
 import { Log } from './logging'
@@ -30,6 +31,8 @@ export default class Kodeventure {
      * Construct a Kodeventure instance
      */
     constructor(simulation: boolean = false) {
+        Log.level = LOG_LEVEL
+
         // Express app and MongoDB
         this.webapp = express()
         this.config()
@@ -49,7 +52,7 @@ export default class Kodeventure {
         Log.debug(`Constructed Kodeventure`, 'server')
 
         // Start simulation if stress testing
-        if (simulation) this.engine.simulate(20)
+        if (simulation) this.engine.simulate(SIMULATION_TOTAL_PLAYERS, SIMULATION_QUESTS_PER_PLAYER)
     }
 
     /**
@@ -77,12 +80,16 @@ export default class Kodeventure {
 
         // Upon game start, schedule unlocking the starter quest for all players
         this.engine.on(SystemEvent.GAME_STARTED, data => {
-            // Unlock starter quest after 5 seconds
-            this.engine.scheduler.scheduleAfter(() => {
-                for (const player of this.engine.players) {
+            let jitter = Math.random() * 200
+
+            for (const player of this.engine.players) {
+                // Unlock starter quest after 5 seconds
+                this.engine.scheduler.scheduleAfter(() => {
                     player.unlockQuest(starterQuest)
-                }
-            }, 5000)
+                }, 5000 + jitter)
+
+                jitter += Math.random() * 200
+            }
         })
 
         // Load all quests from the quests package (submodule)

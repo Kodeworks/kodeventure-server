@@ -353,8 +353,11 @@ export class GameEngine extends EventEmitter {
     /**
      * Starts a full system simulation with N concurrent players that unlocks one starter quest each.
      * WARNING: WILL PURGE THE DATABASE
+     * @param numPlayers The number of concurrent players
+     * @param numStarterQuests The total number of starter quests to unlock (offset by 20 seconds each)
      */
-    public async simulate(numPlayers: number) {
+    public async simulate(numPlayers: number, numStarterQuests: number = 1) {
+        const MAX_JITTER: number = 200 // ms
         const users = []
 
         Log.info(`Starting simulation with ${numPlayers} players`)
@@ -398,15 +401,33 @@ export class GameEngine extends EventEmitter {
             await this.handlePlayerConnecting(playerConnectingEvent)
         }
 
+        // Pre-fetch the starter quests so we don't get any issues with delayed unlock / race condition
+        const quests = new Map<Player, Quest[]>()
+
+        for (const player of this.players) {
+            const starterQuests = []
+
+            for (let i = 0; i < numStarterQuests; i++) {
+                starterQuests.push(this.questMaster.getRandomStarterQuest(player))
+            }
+
+            quests.set(player, starterQuests)
+        }
+
+        /**
+         * Simulate N number of players and M number of quests unlocked in succession
+         */
         const simulator = () => {
-            let jitter = Math.random() * 2000
+            let jitter = Math.random() * MAX_JITTER
 
-            for (const player of this.players) {
-                const quest = this.questMaster.getRandomStarterQuest(player)
+            for (let i = 0; i < numStarterQuests; i++) {
+                for (const player of this.players) {
+                    this.scheduler.scheduleAfter(() => {
+                        player.unlockQuest(this.questMaster.getRandomStarterQuest(player))
+                    }, jitter)
 
-                this.scheduler.scheduleAfter(() => quest.unlock(player), jitter)
-
-                jitter += Math.random() * 2000
+                    jitter += Math.random() * MAX_JITTER
+                }
             }
         }
 

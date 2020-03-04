@@ -165,7 +165,7 @@ function PlayerList(players) {
       e('div', { className: 'player-titles' }, 'Titles'),
       e('div', { className: 'player-score' }, 'Score')
     ),
-    players.map((player, index) => Player(player, index))
+    players.slice(0, 50).map((player, index) => Player(player, index))
   )
 }
 

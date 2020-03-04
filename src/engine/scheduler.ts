@@ -5,7 +5,7 @@ import { Log } from '../logging'
 
 
 // The maximum number of ms to wait before re-scheduling a paused task when resuming
-const MAX_UNPAUSE_JITTER: number = 1000
+const MAX_UNPAUSE_JITTER: number = 200
 
 
 /**
@@ -239,6 +239,8 @@ export class Scheduler {
             let jitter = Math.random() * MAX_UNPAUSE_JITTER
 
             for (const [taskId, task] of this.tasks) {
+                Log.debug(`Scheduling ${taskId} to be resumed in ${jitter} ms`)
+
                 setTimeout(() => {
                     if (task.type === TaskType.IMMEDIATE) {
                         setImmediate(task.task, ...task.params)

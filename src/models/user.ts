@@ -174,8 +174,10 @@ export class Player extends EventEmitter {
      * @param quest The name of a quest, i.e it's main identifier
      */
     public unlockQuest(quest: Quest) {
-        if (this.hasActiveQuest(quest.name) || this.hasCompletedQuest(quest.name)) {
-            return Log.warning(`${this} has already unlocked or completed ${quest}. Ignoring.`)
+        const score = this.score < 0 ? 0 : this.score
+
+        if (this.hasActiveQuest(quest.name) || this.hasCompletedQuest(quest.name) || score < quest.minimumScoreRequirement) {
+            return Log.warning(`${this} has already unlocked or completed ${quest} or too low score. Ignoring.`)
         }
 
         this.quests.push(quest.name)
