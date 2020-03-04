@@ -325,10 +325,17 @@ export class Player extends EventEmitter {
      * @param ip The IP address the player is connecting from
      */
     public static async get(token: string, ip: string, ws: WebSocket): Promise<Player> {
-        const user = await UserDatabaseModel.findOne({'token': token})
+        let user = await UserDatabaseModel.findOne({'token': token}, err => {
+            if (err) Log.error(err)
+        })
 
-        if (!user || user.token !== token) {
-            throw Error(`Failed to fetch user with token "${token}"`)
+        // If it doesn't work on the 2nd try, give up
+        if (!user) {
+            // This stupid shit needs to be here. For some reason, sometimes on the first document after an operation,
+            // null is returned. Try again and it succeeds.
+            user = await UserDatabaseModel.findOne({'token': token})
+
+            if (!user) throw Error(`Failed to fetch user with token "${token}"`)
         }
 
         return new Player(user, ip, ws)
