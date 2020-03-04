@@ -49,16 +49,16 @@ export class QuestMasterController {
 
             let q = starterQuests.pop()
 
-            // Find a quest the player has not yet completed or already has active
-            while (player.hasCompletedQuest(q.name) || player.hasActiveQuest(q.name)) {
-                if (!q) break
-                q = starterQuests.pop()
-            }
-
             if (!q) {
                 Log.warning(`Player ${player} exhausted all starter quests`, 'qm')
 
                 return null
+            }
+
+            // Find a quest the player has not yet completed or already has active
+            while (player.hasCompletedQuest(q.name) || player.hasActiveQuest(q.name)) {
+                if (!q) break
+                q = starterQuests.pop()
             }
 
             return q
