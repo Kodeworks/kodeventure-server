@@ -34,8 +34,13 @@ After doing this, all `npm -g install` will install global packages into `~/.npm
 
 You can also set `~/.npm-global/bin` in your `$PATH`.
 
+# Configure
 
-# Run
+Create a new admin token in `src/config.ts`
+
+Set hostname and port in `src/config.ts`
+
+#### Certificate
 
 Start the server (from the `src` directory):
 
@@ -51,7 +56,9 @@ python3 kodeventure-cli.py cert
 
 Stop the server again.
 
-Start it with the new certificate (from the `src` directory):
+# Run
+
+Start the server (from the `src` directory):
 
 ```
 npm start
