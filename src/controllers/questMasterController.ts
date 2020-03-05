@@ -105,7 +105,7 @@ export class QuestMasterController {
 
                     payload = {
                         'status': 200,
-                        'msg': 'The questmaster has found some strange device underneath his circuitboards.'
+                        'msg': 'The questmaster has found some strange device underneath his circuitboards. A scroll with your assignment has been sent to your client.'
                     }
                 } else {
                     res.status(500)
