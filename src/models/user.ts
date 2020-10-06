@@ -344,6 +344,35 @@ export class Player extends EventEmitter {
     }
 
     /**
+     * Send a HTTP GET request
+     * @param route The route to GET.
+     * @param requestTimeoutMs The request timeout in milliseconds.
+     */
+    public sendHttpGetRequest = async (route: string, requestTimeoutMs = 3000) => {
+        return this.sendHttpRequest(route, 'GET', requestTimeoutMs)
+    }
+
+    /**
+     * Send a HTTP POST request
+     * @param route The route to POST to.
+     * @param payload The object that will be posted.
+     * @param requestTimeoutMs The request timeout in milliseconds.
+     */
+    public sendHttpPostRequest = async (route: string, payload: object, requestTimeoutMs = 3000) => {
+        return this.sendHttpRequest(route, 'POST', requestTimeoutMs, payload)
+    }
+
+    /**
+     * Send a HTTP PUT request
+     * @param route The route to PUT to.
+     * @param payload The object that will be posted.
+     * @param requestTimeoutMs The request timeout in milliseconds.
+     */
+    public sendHttpPutRequest = async (route: string, payload: object, requestTimeoutMs = 3000) => {
+        return this.sendHttpRequest(route, 'PUT', requestTimeoutMs, payload)
+    }
+
+    /**
      * Configure the currently active websocket and attach event handlers
      */
     private configureWebsocket() {
@@ -381,105 +410,38 @@ export class Player extends EventEmitter {
     }
 
     /**
-     * Send a HTTP GET request
-     * @param route The route to GET.
-     * @param requestTimeoutMs The request timeout in milliseconds.
+     * Send an HTTP request asynchronoushly, with a maximum response timeout.
+     * @param route The route/endpoint to query on this Player's web server.
+     * @param method Which HTTP method to use.
+     * @param requestTimeoutMs An optional request timeout, defaults to 3000ms.
      */
-    public sendHttpGetRequest = async (route: string, requestTimeoutMs = 3000) => {
+    private async sendHttpRequest(route: string, method: string, requestTimeoutMs: number = 3000, payload?: object) {
         const url = `https://${this.ip}:${PLAYER_PORT}/${route}`
-
         const controller = new AbortController()
         const timeout = setTimeout(
-            () => { controller.abort() },
+            () => controller.abort(),
             requestTimeoutMs,
         )
+        const options = {
+            method: method.toUpperCase(),
+            signal: controller.signal,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': this.serverToken
+            },
+            body: payload ? JSON.stringify(payload) : undefined
+        }
+
         try {
-            const response = await fetch(url, {
-                method: 'GET',
-                signal: controller.signal,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': this.serverToken
-                },
-            });
+            const response = await fetch(url, options)
             const json = await response.json()
             const statusCode = response.status
+
             return { postResult: json, statusCode }
         } catch (error) {
-            return { postResult: null, statusCode: null };
+            return { postResult: null, statusCode: null }
         } finally {
             clearTimeout(timeout)
         }
     }
-
-    /**
-     * Send a HTTP POST request
-     * @param route The route to POST to.
-     * @param payload The object that will be posted.
-     * @param requestTimeoutMs The request timeout in milliseconds.
-     */
-    public sendHttpPostRequest = async (route: string, payload: object, requestTimeoutMs = 3000) => {
-        const url = `https://${this.ip}:${PLAYER_PORT}/${route}`
-
-        const controller = new AbortController()
-        const timeout = setTimeout(
-            () => { controller.abort() },
-            requestTimeoutMs,
-        )
-
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                signal: controller.signal,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': this.serverToken
-                },
-                body: JSON.stringify(payload)
-            });
-            const statusCode = response.status
-            const json = await response.json()
-            return { postResult: json, statusCode }
-        } catch (error) {
-            return { postResult: null, statusCode: null };
-        } finally {
-            clearTimeout(timeout);
-        };
-    }
-
-    /**
-     * Send a HTTP PUT request
-     * @param route The route to PUT to.
-     * @param payload The object that will be posted.
-     * @param requestTimeoutMs The request timeout in milliseconds.
-     */
-    public sendHttpPutRequest = async (route: string, payload: object, requestTimeoutMs = 3000) => {
-        const url = `https://${this.ip}:${PLAYER_PORT}/${route}`;
-
-        const controller = new AbortController();
-        const timeout = setTimeout(
-            () => { controller.abort(); },
-            requestTimeoutMs,
-        );
-
-        try {
-            const response = await fetch(url, {
-                method: 'PUT',
-                signal: controller.signal,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': this.serverToken
-                },
-                body: JSON.stringify(payload)
-            });
-            const statusCode = response.status
-            const json = await response.json()
-            return { postResult: json, statusCode }
-        } catch (error) {
-            return { postResult: null, statusCode: null };
-        } finally {
-            clearTimeout(timeout);
-        };
-    }
-
 }

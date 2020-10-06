@@ -161,7 +161,7 @@ export class Scheduler {
 
     /**
      * Cancel a periodic task or task that is queued for execution (if the game is paused)
-     * @param task The Timeout object that was returned when the periodic task was scheduled.
+     * @param taskId The task ID that was returned when the task was scheduled.
      */
     public cancel(taskId: number) {
         if (this.tasks.has(taskId)) {
